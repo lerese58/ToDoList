@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+      minWidth="-Infinity" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.121"
+      fx:controller="App.ui.MainDialogController">
+    <children>
+        <BorderPane>
+            <VBox.margin>
+                <Insets left="10.0" right="10.0" top="10.0"/>
+            </VBox.margin>
+            <center>
+                <Label alignment="CENTER" contentDisplay="TOP" text="Your ToDo's: " textAlignment="JUSTIFY"
+                       textOverrun="CLIP" wrapText="true">
+                    <font>
+                        <Font name="Arial" size="14.0"/>
+                    </font>
+                </Label>
+            </center>
+        </BorderPane>
+        <AnchorPane fx:id="anchorPane" VBox.vgrow="ALWAYS">
+            <children>
+                <TableView fx:id="tableView" prefHeight="200.0" prefWidth="200.0" tableMenuButtonVisible="true"
+                           AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                           AnchorPane.topAnchor="0.0">
+                    <columns>
+                        <TableColumn fx:id="columnID" minWidth="-1.0" prefWidth="-1.0" text="ID" visible="false"/>
+                        <TableColumn fx:id="columnTitle" maxWidth="750.0" minWidth="-1.0" prefWidth="-1.0"
+                                     text="Title"/>
+                        <TableColumn fx:id="columnOwner" maxWidth="200.0" minWidth="-Infinity" prefWidth="-1.0"
+                                     text="Owner"/>
+                        <TableColumn fx:id="columnDeadline" maxWidth="250.0" minWidth="-1.0" prefWidth="-1.0"
+                                     text="Deadline"/>
+                        <TableColumn fx:id="columnPersonal" maxWidth="50.0" minWidth="-Infinity" prefWidth="-1.0"
+                                     text="Personal"/>
+                        <TableColumn fx:id="columnStatus" maxWidth="200.0" minWidth="-1.0" prefWidth="-1.0"
+                                     text="Status"/>
+                        <TableColumn fx:id="columnPriority" maxWidth="180.0" minWidth="-1.0" prefWidth="-1.0"
+                                     text="Priority"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                    <rotationAxis>
+                        <Point3D/>
+                    </rotationAxis>
+                    <contextMenu>
+                        <ContextMenu fx:id="contextMenu">
+                            <items>
+                                <MenuItem fx:id="menuItemEdit" mnemonicParsing="false" onAction="#menuItemSelected"
+                                          text="Edit..."/>
+                                <MenuItem fx:id="menuItemDelete" mnemonicParsing="false" onAction="#menuItemSelected"
+                                          text="Delete"/>
+                                <MenuItem fx:id="menuItemProperies" mnemonicParsing="false" onAction="#menuItemSelected"
+                                          text="Properties..."/>
+                            </items>
+                        </ContextMenu>
+                    </contextMenu>
+                </TableView>
+            </children>
+            <VBox.margin>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+            </VBox.margin>
+        </AnchorPane>
+        <AnchorPane>
+            <children>
+                <HBox alignment="TOP_RIGHT" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity"
+                      prefWidth="640.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                    <children>
+                        <Button fx:id="btnAdd" mnemonicParsing="false" onAction="#buttonClicked" text="Add new...">
+                            <HBox.margin>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button fx:id="btnEdit" mnemonicParsing="false" onAction="#buttonClicked" text="Edit">
+                            <HBox.margin>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                            </HBox.margin>
+                        </Button>
+                        <Button fx:id="btnDelete" alignment="TOP_LEFT" contentDisplay="RIGHT" mnemonicParsing="false"
+                                nodeOrientation="LEFT_TO_RIGHT" onAction="#buttonClicked" text="Delete">
+                            <HBox.margin>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                </HBox>
+            </children>
+        </AnchorPane>
+        <AnchorPane prefWidth="600.0">
+            <children>
+                <Label fx:id="labelCount" text="Count of tasks: " AnchorPane.bottomAnchor="0.0"
+                       AnchorPane.leftAnchor="5.0"/>
+            </children>
+        </AnchorPane>
+    </children>
+</VBox>
