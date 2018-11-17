@@ -1,5 +1,6 @@
 package App.ui;
 
+import App.model.TaskCalendar;
 import App.utils.Priority;
 import App.utils.Status;
 import javafx.collections.FXCollections;
@@ -9,6 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import tornadofx.control.DateTimePicker;
 
 import java.util.ArrayList;
 import java.util.regex.Pattern;
@@ -23,8 +25,9 @@ public class EditDialogController {
     private Button btnOK,
             btnCancel;
     @FXML
-    private TextField txtTitle,
-            txtDeadline;
+    private TextField txtTitle;
+    @FXML
+    private DateTimePicker dateTimePicker;
 
     public EditDialogController() {
         correctTime = Pattern.compile("^\\d{2}:\\d{2} \\d{2}.\\d{2}.\\d{4}$");
@@ -38,11 +41,11 @@ public class EditDialogController {
     public void setUiTask(UITask uiTask) {
         if (uiTask != null) {
             txtTitle.setText(uiTask.getTitle());
-            txtDeadline.setText(uiTask.getDeadline());
+            dateTimePicker.setDateTimeValue(new TaskCalendar(uiTask.getDeadline()).getDateTime());
             menuPriority.setValue(Priority.valueOf(uiTask.getPrio()));
         } else {
             txtTitle.setText("");
-            txtDeadline.setText("");
+            dateTimePicker.setPromptText("");
             menuPriority.setValue(Priority.DEFAULT);
         }
         this.uiTask = uiTask;
@@ -56,34 +59,25 @@ public class EditDialogController {
 
     public boolean editTask(ActionEvent actionEvent) { //TODO : add ability to add other users to executorList
         boolean titleFieldIsEmpty = txtTitle.getText().isEmpty();
-        boolean deadlineFieldIsEmpty = txtDeadline.getText().isEmpty();
-        boolean incorrectTimeFormat = !correctTime.matcher(txtDeadline.getText()).matches();
         Button source = (Button) actionEvent.getSource();
         if (source.getId().equals("btnCancel")) {
             closeDialog();
             return false;
-        } else if (!titleFieldIsEmpty && !deadlineFieldIsEmpty && !incorrectTimeFormat) {
+        } else if (!titleFieldIsEmpty) {
             ArrayList<Long> aloneExecutor = new ArrayList<>();
             aloneExecutor.add(MainDialogController._currentUserID);
             this.setUiTask(new UITask(MainDialogController._currentUserID,          //ownerID
                     aloneExecutor,                                                  //userList(till not available, it'll add only owner to executors)
                     txtTitle.getText(),                                             //title
-                    txtDeadline.getText(),                                          //Deadline
+                    new TaskCalendar(dateTimePicker.getDateTimeValue()).toString(), //Deadline
                     true,                                                   //isPersonal(till not available, by default 'true')
                     Status.IN_PROGRESS.toString(),                                  //status
                     menuPriority.getSelectionModel().getSelectedItem().toString()));//priority
             closeDialog();
             return true;
-        }
-        if (titleFieldIsEmpty) {
+        } else {
             txtTitle.setPromptText("Input title");
-            if (deadlineFieldIsEmpty) {
-                txtDeadline.setPromptText("Input time");
-            } else if (incorrectTimeFormat) {
-                txtDeadline.setPromptText("Time should be in hh:mm dd.MM.yyyy");
-            }
-        } else if (incorrectTimeFormat)
-            txtDeadline.setText("Time should be in hh:mm dd.MM.yyyy");
+        }
         return false;
     }
 

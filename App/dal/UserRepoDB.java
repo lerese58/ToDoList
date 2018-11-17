@@ -14,10 +14,15 @@ public class UserRepoDB implements Repository<DBUser> {
         _conn = _dbConnection.getConnection();
         try {
             Statement statement = _conn.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM Users");
+            ResultSet setOfUsers = statement.executeQuery("SELECT * FROM Users");
             ArrayList<DBUser> allUsers = new ArrayList<>();
-            while (resultSet.next())
-                allUsers.add(parseResultSet(resultSet));
+            if (setOfUsers.next()) {
+                do {
+                    allUsers.add(parseResultSet(setOfUsers));
+
+                }
+                while (setOfUsers.next());
+            }
             return allUsers;
         } catch (SQLException | NullPointerException e) {
             e.printStackTrace();
@@ -32,6 +37,8 @@ public class UserRepoDB implements Repository<DBUser> {
         try {
             Statement getByIdStatement = _conn.createStatement();
             ResultSet userById = getByIdStatement.executeQuery("SELECT * FROM Users WHERE Users.ID = " + id);
+            if (!userById.next())
+                return null;
             return parseResultSet(userById);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -44,8 +51,10 @@ public class UserRepoDB implements Repository<DBUser> {
         _dbConnection = DBConnection.getInstance();
         _conn = _dbConnection.getConnection();
         try {
-            Statement statement = _conn.createStatement();
-            statement.executeUpdate("DELETE * FROM Users WHERE Users.ID = " + id);
+            Statement removeUser = _conn.createStatement();
+            Statement removeExecutor = _conn.createStatement();
+            removeUser.executeUpdate("DELETE * FROM Users WHERE Users.ID = " + id);
+            removeExecutor.executeUpdate("delete * from task_userlist where UserID = " + id); // TODO: transaction
             return true;
         } catch (SQLException e) {
             e.printStackTrace();

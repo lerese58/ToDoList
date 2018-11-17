@@ -1,5 +1,6 @@
 package App.ui;
 
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,6 +10,23 @@ import javafx.stage.Stage;
 public class Main extends Application {
     public static void main(String[] args) {
         launch(args);
+        /*Connection conn = DBConnection.getInstance().getConnection();
+        try {
+            Statement stat = conn.createStatement();
+            ResultSet set = stat.executeQuery("select * from task");
+            while (set.next())
+                System.out.println(set.getString("title"));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        Repository<DBUser> userRepoDB = new UserRepoDB();
+        userRepoDB.update(2L, new DBUser(2L, "second", "user", "1234", true));
+        Repository<DBTask> taskRepoDB = new TaskRepoDB();
+        ArrayList<Long> users = new ArrayList<>();
+        users.add(1L);
+        users.add(2L);
+        taskRepoDB.update(3, new DBTask(3,1,users, "testT_UL", new TaskCalendar("00:00 31.12.2018"), true, Status.IN_PROGRESS, Priority.LOW));
+        System.out.println(taskRepoDB.getAll());*/
     }
 
     @Override

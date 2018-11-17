@@ -5,6 +5,7 @@
 <?import javafx.scene.Cursor?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
+<?import tornadofx.control.DateTimePicker?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="195.0" prefWidth="480.0"
             xmlns="http://javafx.com/javafx/8.0.121" fx:controller="App.ui.EditDialogController">
     <center>
@@ -42,15 +43,13 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
                     </GridPane.margin>
                 </TextField>
-                <TextField fx:id="txtDeadline" prefHeight="24.0" prefWidth="230.0" promptText="HH:mm DD:MM:YYYY"
-                           GridPane.columnIndex="1" GridPane.rowIndex="3">
-                    <font>
-                        <Font name="System Bold" size="11.0"/>
-                    </font>
+                <DateTimePicker fx:id="dateTimePicker" format="HH:mm dd.MM.yyyy" prefWidth="285.0"
+                                promptText="HH:mm dd.MM.yyyy" showWeekNumbers="true" GridPane.columnIndex="1"
+                                GridPane.halignment="CENTER" GridPane.rowIndex="1" GridPane.valignment="CENTER">
                     <GridPane.margin>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
                     </GridPane.margin>
-                </TextField>
+                </DateTimePicker>
                 <ChoiceBox fx:id="menuPriority" cache="true" prefWidth="115.0" GridPane.columnIndex="1"
                            GridPane.rowIndex="2">
                     <cursor>
@@ -90,12 +89,6 @@
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
                     </GridPane.margin>
                 </Label>
-                <DatePicker fx:id="datePicker" prefWidth="285.0" GridPane.columnIndex="1" GridPane.halignment="CENTER"
-                            GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                    <GridPane.margin>
-                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
-                    </GridPane.margin>
-                </DatePicker>
                 <Label text="Executors: " GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>

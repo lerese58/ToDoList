@@ -1,20 +1,21 @@
 package App.dal;
 
-import net.ucanaccess.jdbc.UcanaccessDriver;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
+
 public class DBConnection {
     private static volatile DBConnection instance;
     private Connection _connection;
-    private String db = "Database41.accdb";
+    private String url = "jdbc:mysql://localhost:3306/todolist?useSSL=false";
+    private String user = "root";
+    private String pass = "rootroot";
 
     private DBConnection() {
         try {
-            Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
-            _connection = DriverManager.getConnection(UcanaccessDriver.URL_PREFIX + db);
+            Class.forName("com.mysql.jdbc.Driver");
+            _connection = DriverManager.getConnection(url, user, pass);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
         }

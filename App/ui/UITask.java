@@ -34,7 +34,7 @@ public class UITask {
     }
 
     public UITask(Long ownerID, ArrayList<Long> users, String title, String deadline, Boolean isPersonal, String status, String prio) {
-        _id = new SimpleLongProperty(Math.abs(title.hashCode() + deadline.hashCode() + status.hashCode() + _prio.hashCode()));
+        _id = new SimpleLongProperty(Math.abs(title.hashCode() + deadline.hashCode() + status.hashCode() + prio.hashCode()));
         _ownerID = new SimpleLongProperty(ownerID);
         _userList = new ArrayList<>();
         for (Long userID : users) _userList.add(new SimpleLongProperty(userID));
