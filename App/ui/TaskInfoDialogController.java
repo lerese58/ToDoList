@@ -13,6 +13,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.stage.Stage;
 
 import java.io.IOException;
 
@@ -68,16 +69,31 @@ public class TaskInfoDialogController {
 
     @FXML
     private void initialize() {
-        titleLabel.setText(_uiTask.getTitle());
-        ownerLabel.setText(String.valueOf(_uiTask.getOwnerID()));
-        deadlineLabel.setText(_uiTask.getDeadline());
-        personalLabel.setText(_uiTask.isPersonal() ? "Yes" : "No");
-        statusLabel.setText(_uiTask.getStatus());
-        prioLabel.setText(_uiTask.getPrio());
+        //titleLabel.setText(_uiTask.getTitle());
+        //ownerLabel.setText(String.valueOf(_uiTask.getOwnerID()));
+        //deadlineLabel.setText(_uiTask.getDeadline());
+        //personalLabel.setText(_uiTask.isPersonal() ? "Yes" : "No");
+        //statusLabel.setText(_uiTask.getStatus());
+        //prioLabel.setText(_uiTask.getPrio());
+        //tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
+        //for (SimpleLongProperty userId : _uiTask.getUserList()) {
+        //    _execList.add(new UIUser(_userService.getById(userId.getValue())));
+        //}
+
+    }
+
+    public void setFields(UITask uiTask) {
+        titleLabel.setText(uiTask.getTitle());
+        ownerLabel.setText(String.valueOf(uiTask.getOwnerID()));
+        deadlineLabel.setText(uiTask.getDeadline());
+        personalLabel.setText(uiTask.isPersonal() ? "Yes" : "No");
+        statusLabel.setText(uiTask.getStatus());
+        prioLabel.setText(uiTask.getPrio());
         tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
-        for (SimpleLongProperty userId : _uiTask.getUserList()) {
+        for (SimpleLongProperty userId : uiTask.getUserList()) {
             _execList.add(new UIUser(_userService.getById(userId.getValue())));
         }
+        tableExecutors.setItems(_execList);
     }
 
     @FXML
@@ -88,13 +104,21 @@ public class TaskInfoDialogController {
         Button clicked = (Button) source;
         switch (clicked.getId()) {
             case "btnOK":
+                closeDialog();
                 break;
             case "btnEdit":
                 break;
             case "btnCancel":
+                closeDialog();
                 break;
         }
 
+    }
+
+    public void closeDialog() {
+        Stage stage = (Stage) btnCancel.getScene().getWindow();
+        stage.close();
+        _execList.clear();
     }
 
 }

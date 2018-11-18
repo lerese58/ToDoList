@@ -20,7 +20,7 @@ public class EditDialogController {
     private final Pattern correctTime;
     @FXML
     ChoiceBox<Priority> menuPriority;
-    private UITask uiTask;
+
     @FXML
     private Button
             btnOK,
@@ -29,13 +29,14 @@ public class EditDialogController {
     private TextField txtTitle;
     @FXML
     private DateTimePicker dateTimePicker;
+    private UITask _uiTask;
 
     public EditDialogController() {
         correctTime = Pattern.compile("^\\d{2}:\\d{2} \\d{2}.\\d{2}.\\d{4}$");
     }
 
     public UITask getUiTask() {
-        return uiTask;
+        return _uiTask;
     }
 
     public void setUiTask(UITask uiTask) {
@@ -48,7 +49,7 @@ public class EditDialogController {
             dateTimePicker.setPromptText("");
             menuPriority.setValue(Priority.DEFAULT);
         }
-        this.uiTask = uiTask;
+        this._uiTask = uiTask;
     }
 
     @FXML

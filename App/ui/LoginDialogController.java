@@ -23,7 +23,8 @@ public class LoginDialogController {
     private Parent _newUserParent;
 
     @FXML
-    private Button btnOK,
+    private Button
+            btnOK,
             btnCancel;
     @FXML
     private TextField txtLogin;
@@ -32,10 +33,10 @@ public class LoginDialogController {
 
     public LoginDialogController() {
         _userService = new UserServiceImpl();
-        FXMLLoader _loginLoader = new FXMLLoader();
-        _loginLoader.setLocation(getClass().getResource("fxml/NewUserDialog.fxml"));
+        FXMLLoader _newUserLoader = new FXMLLoader();
+        _newUserLoader.setLocation(getClass().getResource("fxml/NewUserDialog.fxml"));
         try {
-            _newUserParent = _loginLoader.load();
+            _newUserParent = _newUserLoader.load();
         } catch (IOException e) {
             e.printStackTrace();
         }

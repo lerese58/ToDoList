@@ -72,22 +72,6 @@ public class MainDialogController {
     public MainDialogController() {
         _taskService = new TaskServiceImpl();
         _data = FXCollections.observableArrayList();
-        _editLoader = new FXMLLoader();
-        _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
-        _loginLoader = new FXMLLoader();
-        _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
-        _infoLoader = new FXMLLoader();
-        _infoLoader.setLocation(getClass().getResource("fxml/TaskInfoDialog.fxml"));
-        try {
-            _editParent = _editLoader.load();  //EditDialogController()
-            _loginParent = _loginLoader.load();//LoginDialogController()
-            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        _editDialogController = _editLoader.getController();
-        _loginDialogController = _loginLoader.getController();
-        _taskInfoController = _infoLoader.getController();
     }
 
     public MainDialogController(TaskService taskService) {
@@ -98,7 +82,7 @@ public class MainDialogController {
         _loginLoader = new FXMLLoader();
         _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
         _infoLoader = new FXMLLoader();
-        _infoLoader.setLocation(getClass().getResource("fxml/TaskInfoDialog.fxml"));
+        _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
         try {
             _editParent = _editLoader.load();  //EditDialogController()
             _loginParent = _loginLoader.load();//LoginDialogController()
@@ -135,6 +119,22 @@ public class MainDialogController {
 
     @FXML
     private void initialize() {
+        _editLoader = new FXMLLoader();
+        _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
+        _loginLoader = new FXMLLoader();
+        _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
+        _infoLoader = new FXMLLoader();
+        _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
+        try {
+            _editParent = _editLoader.load();  //EditDialogController()
+            _loginParent = _loginLoader.load();//LoginDialogController()
+            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        _editDialogController = _editLoader.getController();
+        _loginDialogController = _loginLoader.getController();
+        _taskInfoController = _infoLoader.getController();
         showLoginDialog();
         if (_loginDialogController.getUiUser() == null) {
             System.exit(0);
@@ -263,6 +263,7 @@ public class MainDialogController {
             _infoStage.setScene(new Scene(_infoParent));
             _infoStage.initOwner(_mainStage);
             _infoStage.setOnHiding(event -> updateList());
+            _infoStage.setOnShowing(event -> _taskInfoController.setFields(tableView.getSelectionModel().getSelectedItem()));
         }
         _infoStage.showAndWait();//_infoDialogController.initialize();
     }
