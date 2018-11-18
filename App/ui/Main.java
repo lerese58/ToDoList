@@ -33,7 +33,6 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(getClass().getResource("fxml/MainDialog.fxml"));
-        //loader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
         Parent fxmlMain = loader.load();//MainDialogController()
         MainDialogController mainController = loader.getController();
         mainController.setMainStage(primaryStage);

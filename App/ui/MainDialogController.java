@@ -16,7 +16,6 @@ import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Comparator;
 
@@ -27,7 +26,7 @@ import java.util.Comparator;
  * todo: imagine a design of mainDialog
  * todo: Github
  * todo: repair adding task & think about userList
- *
+ * TODO: realize context menu
  * */
 public class MainDialogController {
 
@@ -37,31 +36,35 @@ public class MainDialogController {
     private Stage _mainStage;
     private Stage _editStage;
     private Stage _loginStage;
+    private Stage _infoStage;
     private Parent _editParent;
     private Parent _loginParent;
+    private Parent _infoParent;
     private FXMLLoader _editLoader;
     private FXMLLoader _loginLoader;
+    private FXMLLoader _infoLoader;
     private EditDialogController _editDialogController;
     private LoginDialogController _loginDialogController;
-    //TODO: realize context menu
+    private TaskInfoDialogController _taskInfoController;
     @FXML
-    private Button btnAdd,
-            btnDelete,
-            btnSearch;
-    @FXML
-    private TextField txtSearch;
+    private Button
+            btnAdd,
+            btnDelete;
     @FXML
     private TableView<UITask> tableView;
     @FXML
-    private TableColumn<UITask, String> columnTitle,
+    private TableColumn<UITask, String>
+            columnTitle,
             columnDeadline,
             columnStatus,
             columnPriority;
     @FXML
-    private TableColumn<UITask, Long> columnID,
+    private TableColumn<UITask, Long>
+            columnID,
             columnOwner;
     @FXML
-    private TableColumn<UITask, Boolean> columnPersonal;
+    private TableColumn<UITask, Boolean>
+            columnPersonal;
 
     @FXML
     private Label labelCount;
@@ -73,14 +76,18 @@ public class MainDialogController {
         _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
         _loginLoader = new FXMLLoader();
         _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
+        _infoLoader = new FXMLLoader();
+        _infoLoader.setLocation(getClass().getResource("fxml/TaskInfoDialog.fxml"));
         try {
-            _editParent = _editLoader.load();//EditDialogController()
+            _editParent = _editLoader.load();  //EditDialogController()
             _loginParent = _loginLoader.load();//LoginDialogController()
+            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
         } catch (IOException e) {
             e.printStackTrace();
         }
         _editDialogController = _editLoader.getController();
         _loginDialogController = _loginLoader.getController();
+        _taskInfoController = _infoLoader.getController();
     }
 
     public MainDialogController(TaskService taskService) {
@@ -90,14 +97,18 @@ public class MainDialogController {
         _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
         _loginLoader = new FXMLLoader();
         _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
+        _infoLoader = new FXMLLoader();
+        _infoLoader.setLocation(getClass().getResource("fxml/TaskInfoDialog.fxml"));
         try {
-            _editParent = _editLoader.load();//EditDialogController()
+            _editParent = _editLoader.load();  //EditDialogController()
             _loginParent = _loginLoader.load();//LoginDialogController()
+            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
         } catch (IOException e) {
             e.printStackTrace();
         }
         _editDialogController = _editLoader.getController();
         _loginDialogController = _loginLoader.getController();
+        _taskInfoController = _infoLoader.getController();
     }
 
     public void setMainStage(Stage stage) {
@@ -108,10 +119,10 @@ public class MainDialogController {
         return _loginDialogController.getUiUser();
     }
 
-    private void fillTable() throws FileNotFoundException {
+    private void fillTable() {
         columnID.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
         columnTitle.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
-        columnOwner.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
+        columnOwner.setCellValueFactory(cellData -> cellData.getValue().ownerIdProperty().asObject());
         columnDeadline.setCellValueFactory(cellData -> cellData.getValue().deadlineProperty());
         columnPersonal.setCellValueFactory(cellData -> cellData.getValue().isPersonalProperty());
         columnStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
@@ -123,7 +134,7 @@ public class MainDialogController {
     }
 
     @FXML
-    private void initialize() throws IOException {
+    private void initialize() {
         showLoginDialog();
         if (_loginDialogController.getUiUser() == null) {
             System.exit(0);
@@ -136,6 +147,12 @@ public class MainDialogController {
         columnID.setVisible(false);
         columnDeadline.setComparator(Comparator.comparing(TaskCalendar::new));
         labelCount.setText("Count of ToDo: " + _data.size());
+        tableView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                _taskInfoController.setUiTask(tableView.getSelectionModel().getSelectedItem());
+                showInfoDialog();
+            }
+        });
     }
 
     @FXML
@@ -159,7 +176,7 @@ public class MainDialogController {
         }
         _editDialogController.setUiTask(null);
         updateList();
-        updateCount();
+        //updateCount();
     }
 
     @FXML
@@ -178,8 +195,11 @@ public class MainDialogController {
                 onEditAction(selectedTask);
                 break;
             case "menuItemProperties":
+                _taskInfoController.setUiTask(selectedTask);
+                showInfoDialog();
                 break;
         }
+        _taskInfoController.setUiTask(null);
 
     }
 
@@ -235,17 +255,25 @@ public class MainDialogController {
         _loginStage.showAndWait(); //_loginDialogController.initialize()
     }
 
+    private void showInfoDialog() {
+        if (_infoStage == null) {
+            _infoStage = new Stage();
+            _infoStage.setMinWidth(240);
+            _infoStage.setMinHeight(360);
+            _infoStage.setScene(new Scene(_infoParent));
+            _infoStage.initOwner(_mainStage);
+            _infoStage.setOnHiding(event -> updateList());
+        }
+        _infoStage.showAndWait();//_infoDialogController.initialize();
+    }
+
     private void updateCount() {
         labelCount.setText("Count of ToDo: " + _data.size());
     }
 
     private void updateList() {
         _data.clear();
-        try {
-            fillTable();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        fillTable();
         _data.addListener((ListChangeListener<UITask>) c -> updateCount());
         tableView.setItems(_data);
         updateCount();

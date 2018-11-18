@@ -15,7 +15,6 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-
 public class LoginDialogController {
 
     private final UserService _userService;
@@ -30,7 +29,6 @@ public class LoginDialogController {
     private TextField txtLogin;
     @FXML
     private PasswordField txtPassword;
-
 
     public LoginDialogController() {
         _userService = new UserServiceImpl();

@@ -22,7 +22,8 @@ public class EditDialogController {
     ChoiceBox<Priority> menuPriority;
     private UITask uiTask;
     @FXML
-    private Button btnOK,
+    private Button
+            btnOK,
             btnCancel;
     @FXML
     private TextField txtTitle;
@@ -31,7 +32,6 @@ public class EditDialogController {
 
     public EditDialogController() {
         correctTime = Pattern.compile("^\\d{2}:\\d{2} \\d{2}.\\d{2}.\\d{4}$");
-
     }
 
     public UITask getUiTask() {

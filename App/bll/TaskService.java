@@ -9,9 +9,9 @@ public interface TaskService {
 
     ArrayList<BLTask> getTasks() throws IOException;
 
-    ArrayList<BLTask> getListForThisUser(long userID) throws FileNotFoundException;
+    ArrayList<BLTask> getListForThisUser(long userID);
 
-    BLTask getByID(long id) throws FileNotFoundException;
+    BLTask getByID(long id);
 
     ArrayList<BLTask> getListBefore(LocalDateTime time) throws FileNotFoundException;
 
