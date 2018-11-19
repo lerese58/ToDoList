@@ -21,16 +21,10 @@ import java.util.Comparator;
 
 /*
  * TODO: set a date picker + time
- * Todo: solve a problem with menuItemDelete
- * todo: create a dialog with properties
- * todo: imagine a design of mainDialog
- * todo: Github
- * todo: repair adding task & think about userList
- * TODO: realize context menu
  * */
 public class MainDialogController {
 
-    public static long _currentUserID;
+    static long _currentUserID;
     private final TaskService _taskService;
     private ObservableList<UITask> _data;
     private Stage _mainStage;
@@ -46,9 +40,9 @@ public class MainDialogController {
     private EditDialogController _editDialogController;
     private LoginDialogController _loginDialogController;
     private TaskInfoDialogController _taskInfoController;
+
     @FXML
-    private Button
-            btnAdd,
+    private Button btnAdd,
             btnDelete;
     @FXML
     private TableView<UITask> tableView;
@@ -65,13 +59,28 @@ public class MainDialogController {
     @FXML
     private TableColumn<UITask, Boolean>
             columnPersonal;
-
     @FXML
     private Label labelCount;
 
     public MainDialogController() {
         _taskService = new TaskServiceImpl();
         _data = FXCollections.observableArrayList();
+        _editLoader = new FXMLLoader();
+        _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
+        _loginLoader = new FXMLLoader();
+        _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
+        _infoLoader = new FXMLLoader();
+        _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
+        try {
+            _editParent = _editLoader.load();  //EditDialogController()
+            _loginParent = _loginLoader.load();//LoginDialogController()
+            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        _editDialogController = _editLoader.getController();
+        _loginDialogController = _loginLoader.getController();
+        _taskInfoController = _infoLoader.getController();
     }
 
     public MainDialogController(TaskService taskService) {
@@ -95,51 +104,15 @@ public class MainDialogController {
         _taskInfoController = _infoLoader.getController();
     }
 
-    public void setMainStage(Stage stage) {
-        _mainStage = stage;
-    }
-
-    private UIUser getUser() {
-        return _loginDialogController.getUiUser();
-    }
-
-    private void fillTable() {
-        columnID.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
-        columnTitle.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
-        columnOwner.setCellValueFactory(cellData -> cellData.getValue().ownerIdProperty().asObject());
-        columnDeadline.setCellValueFactory(cellData -> cellData.getValue().deadlineProperty());
-        columnPersonal.setCellValueFactory(cellData -> cellData.getValue().isPersonalProperty());
-        columnStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
-        columnPriority.setCellValueFactory(cellData -> cellData.getValue().prioProperty());
-        _data = FXCollections.observableArrayList();
-        for (BLTask blTask : _taskService.getListForThisUser(_currentUserID)) {
-            _data.add(new UITask(blTask));
-        }
+    public void setMainStage(Stage mainStage) {
+        _mainStage = mainStage;
     }
 
     @FXML
     private void initialize() {
-        _editLoader = new FXMLLoader();
-        _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
-        _loginLoader = new FXMLLoader();
-        _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
-        _infoLoader = new FXMLLoader();
-        _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
-        try {
-            _editParent = _editLoader.load();  //EditDialogController()
-            _loginParent = _loginLoader.load();//LoginDialogController()
-            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        _editDialogController = _editLoader.getController();
-        _loginDialogController = _loginLoader.getController();
-        _taskInfoController = _infoLoader.getController();
         showLoginDialog();
-        if (_loginDialogController.getUiUser() == null) {
+        if (_loginDialogController.getUiUser() == null)
             System.exit(0);
-            return;
-        }
         _currentUserID = getUser().getId();
         fillTable();
         _data.addListener((ListChangeListener<UITask>) c -> updateCount());
@@ -153,6 +126,7 @@ public class MainDialogController {
                 showInfoDialog();
             }
         });
+        _editDialogController.setUiTask(null);
     }
 
     @FXML
@@ -171,12 +145,12 @@ public class MainDialogController {
                 onDeleteAction(selectedTask);
                 break;
             case "btnEdit":
-                onEditAction(selectedTask);
+                _editDialogController.setUiTask(selectedTask);
+                onEditAction();
                 break;
         }
         _editDialogController.setUiTask(null);
         updateList();
-        //updateCount();
     }
 
     @FXML
@@ -192,7 +166,8 @@ public class MainDialogController {
                 onDeleteAction(selectedTask);
                 break;
             case "menuItemEdit":
-                onEditAction(selectedTask);
+                _editDialogController.setUiTask(selectedTask);
+                onEditAction();
                 break;
             case "menuItemProperties":
                 _taskInfoController.setUiTask(selectedTask);
@@ -200,32 +175,42 @@ public class MainDialogController {
                 break;
         }
         _taskInfoController.setUiTask(null);
+        updateList();
+    }
 
+    private UIUser getUser() {
+        return _loginDialogController.getUiUser();
+    }
+
+    private void fillTable() {
+        columnID.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
+        columnTitle.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
+        columnOwner.setCellValueFactory(cellData -> cellData.getValue().ownerIdProperty().asObject());
+        columnDeadline.setCellValueFactory(cellData -> cellData.getValue().deadlineProperty());
+        columnPersonal.setCellValueFactory(cellData -> cellData.getValue().isPersonalProperty());
+        columnStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
+        columnPriority.setCellValueFactory(cellData -> cellData.getValue().prioProperty());
+        for (BLTask blTask : _taskService.getListForThisUser(_currentUserID)) {
+            _data.add(new UITask(blTask));
+        }
     }
 
     private void onAddAction() {
         showEditDialog();
-        if (!(_editDialogController.getUiTask() == null))
-            _taskService.update(_editDialogController.getUiTask().getId(), new BLTask(_editDialogController.getUiTask()));
+        if (_editDialogController.getUiTask() == null)
+            return;
+        _taskService.update(_editDialogController.getUiTask().getId(), new BLTask(_editDialogController.getUiTask()));
     }
 
-    private void onDeleteAction(UITask selectedTask) {
-        if (selectedTask == null)
-            return;
-        try {
-            _taskService.removeById(selectedTask.getId());
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void onDeleteAction(UITask selected) {
+        _taskService.removeById(selected.getId());
     }
 
-    private void onEditAction(UITask selectedTask) {
-        if (selectedTask == null)
-            return;
-        _editDialogController.setUiTask(selectedTask);
+    private void onEditAction() {
         showEditDialog();
-        if (!(_editDialogController.getUiTask() == null))
-            _taskService.update(selectedTask.getId(), new BLTask(_editDialogController.getUiTask()));
+        if (_editDialogController.getUiTask() == null)
+            return;
+        _taskService.update(_editDialogController.getUiTask().getId(), new BLTask(_editDialogController.getUiTask()));
     }
 
     private void showEditDialog() {
@@ -263,7 +248,6 @@ public class MainDialogController {
             _infoStage.setScene(new Scene(_infoParent));
             _infoStage.initOwner(_mainStage);
             _infoStage.setOnHiding(event -> updateList());
-            _infoStage.setOnShowing(event -> _taskInfoController.setFields(tableView.getSelectionModel().getSelectedItem()));
         }
         _infoStage.showAndWait();//_infoDialogController.initialize();
     }

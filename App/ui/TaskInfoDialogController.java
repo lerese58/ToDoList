@@ -7,22 +7,20 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-
+/*
+ * TODO: set btnEdit
+ */
 public class TaskInfoDialogController {
 
     private UITask _uiTask;
     private ObservableList<UIUser> _execList;
     private UserService _userService;
-    private Parent _infoParent;
 
     @FXML
     private Label
@@ -45,13 +43,6 @@ public class TaskInfoDialogController {
     public TaskInfoDialogController() {
         _userService = new UserServiceImpl();
         _execList = FXCollections.observableArrayList();
-        FXMLLoader _loginLoader = new FXMLLoader();
-        _loginLoader.setLocation(getClass().getResource("fxml/NewUserDialog.fxml"));
-        try {
-            _infoParent = _loginLoader.load();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     public TaskInfoDialogController(UserService userService) {
@@ -59,41 +50,14 @@ public class TaskInfoDialogController {
         _execList = FXCollections.observableArrayList();
     }
 
-    public UITask getUiTask() {
-        return _uiTask;
-    }
-
     public void setUiTask(UITask uiTask) {
         _uiTask = uiTask;
+        setFields();
     }
 
     @FXML
     private void initialize() {
-        //titleLabel.setText(_uiTask.getTitle());
-        //ownerLabel.setText(String.valueOf(_uiTask.getOwnerID()));
-        //deadlineLabel.setText(_uiTask.getDeadline());
-        //personalLabel.setText(_uiTask.isPersonal() ? "Yes" : "No");
-        //statusLabel.setText(_uiTask.getStatus());
-        //prioLabel.setText(_uiTask.getPrio());
-        //tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
-        //for (SimpleLongProperty userId : _uiTask.getUserList()) {
-        //    _execList.add(new UIUser(_userService.getById(userId.getValue())));
-        //}
 
-    }
-
-    public void setFields(UITask uiTask) {
-        titleLabel.setText(uiTask.getTitle());
-        ownerLabel.setText(String.valueOf(uiTask.getOwnerID()));
-        deadlineLabel.setText(uiTask.getDeadline());
-        personalLabel.setText(uiTask.isPersonal() ? "Yes" : "No");
-        statusLabel.setText(uiTask.getStatus());
-        prioLabel.setText(uiTask.getPrio());
-        tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
-        for (SimpleLongProperty userId : uiTask.getUserList()) {
-            _execList.add(new UIUser(_userService.getById(userId.getValue())));
-        }
-        tableExecutors.setItems(_execList);
     }
 
     @FXML
@@ -107,6 +71,7 @@ public class TaskInfoDialogController {
                 closeDialog();
                 break;
             case "btnEdit":
+                closeDialog();
                 break;
             case "btnCancel":
                 closeDialog();
@@ -115,10 +80,25 @@ public class TaskInfoDialogController {
 
     }
 
-    public void closeDialog() {
+    private void setFields() {
+        if (_uiTask != null) {
+            titleLabel.setText(_uiTask.getTitle());
+            ownerLabel.setText(String.valueOf(_uiTask.getOwnerID()));
+            deadlineLabel.setText(_uiTask.getDeadline());
+            personalLabel.setText(_uiTask.isPersonal() ? "Yes" : "No");
+            statusLabel.setText(_uiTask.getStatus());
+            prioLabel.setText(_uiTask.getPrio());
+            tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
+            for (SimpleLongProperty userId : _uiTask.getUserList()) {
+                _execList.add(new UIUser(_userService.getById(userId.getValue())));
+            }
+            tableExecutors.setItems(_execList);
+        }
+    }
+
+    private void closeDialog() {
         Stage stage = (Stage) btnCancel.getScene().getWindow();
         stage.close();
         _execList.clear();
     }
-
 }

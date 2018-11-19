@@ -95,4 +95,12 @@ public class UIUser {
     public void setReadyToOrder(Boolean readyToOrder) {
         _isReadyToOrder.set(readyToOrder);
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(_login.get());
+        sb.append(",    is open:").append(_isReadyToOrder.get());
+        return sb.toString();
+    }
 }

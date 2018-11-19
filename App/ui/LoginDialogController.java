@@ -55,7 +55,7 @@ public class LoginDialogController {
     }
 
     @FXML
-    public void onButtonClick(ActionEvent actionEvent) throws IOException {
+    public void onButtonClick(ActionEvent actionEvent) {
         Button source = (Button) actionEvent.getSource();
         if (source.getId().equals("btnCancel"))
             onCancelButton();

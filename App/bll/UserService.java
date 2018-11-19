@@ -1,17 +1,16 @@
 package App.bll;
 
-import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 public interface UserService {
 
-    ArrayList<BLUser> getAllUsers() throws FileNotFoundException;
+    ArrayList<BLUser> getAllUsers();
 
     BLUser getById(long id);
 
-    BLUser getByLoginPassword(String login, String password) throws FileNotFoundException;
+    BLUser getByLoginPassword(String login, String password);
 
-    BLUser getByLogin(String login) throws FileNotFoundException;
+    BLUser getByLogin(String login);
 
     boolean removeById(long id);
 

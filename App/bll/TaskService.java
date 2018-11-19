@@ -1,27 +1,25 @@
 package App.bll;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public interface TaskService {
 
-    ArrayList<BLTask> getTasks() throws IOException;
+    ArrayList<BLTask> getTasks();
 
     ArrayList<BLTask> getListForThisUser(long userID);
 
     BLTask getByID(long id);
 
-    ArrayList<BLTask> getListBefore(LocalDateTime time) throws FileNotFoundException;
+    ArrayList<BLTask> getListBefore(LocalDateTime time);
 
-    ArrayList<BLTask> getListAfter(LocalDateTime time) throws FileNotFoundException;
+    ArrayList<BLTask> getListAfter(LocalDateTime time);
 
-    boolean removeById(long id) throws IOException;
+    boolean removeById(long id);
 
-    boolean remove(BLTask blTask) throws IOException;
+    boolean remove(BLTask blTask);
 
-    boolean removeBefore(LocalDateTime time) throws IOException;
+    boolean removeBefore(LocalDateTime time);
 
     boolean update(long ID, BLTask task);
 

@@ -11,14 +11,13 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-import java.io.FileNotFoundException;
-
 public class NewUserDialogController {
 
     private final UserService _userService;
+
     @FXML
     private Button btnOK,
-            btnCancel;//isCancelButton
+            btnCancel;
     @FXML
     private TextField txtName,
             txtLogin;
@@ -38,7 +37,7 @@ public class NewUserDialogController {
         txtPassword.setText("");
     }
 
-    private int isDataCorrect() throws FileNotFoundException { // 0 - for correct data, 1 - login already created, 2 - some fields is empty
+    private int isDataCorrect() { // 0 - for correct data, 1 - login already created, 2 - some fields is empty
         boolean alreadyCreated = (_userService.getByLogin(txtLogin.getText()) != null);
         boolean nameEmpty = txtName.getText().isEmpty();
         boolean loginEmpty = txtLogin.getText().isEmpty();
@@ -50,7 +49,7 @@ public class NewUserDialogController {
         else return 0;
     }
 
-    public void onButtonClick(ActionEvent actionEvent) throws FileNotFoundException {
+    public void onButtonClick(ActionEvent actionEvent) {
         if (!(actionEvent.getSource() instanceof Button))
             return;
         Button source = (Button) actionEvent.getSource();

@@ -1,14 +1,16 @@
 package App.ui;
 
+import App.bll.UserService;
+import App.bll.UserServiceImpl;
 import App.model.TaskCalendar;
 import App.utils.Priority;
 import App.utils.Status;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceBox;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Stage;
 import tornadofx.control.DateTimePicker;
 
@@ -17,39 +19,31 @@ import java.util.regex.Pattern;
 
 public class EditDialogController {
 
-    private final Pattern correctTime;
+    @FXML
+    CheckBox personalCheck;
+    @FXML
+    ListView<UIUser> listViewUsers;
+    private UserService _userService;
+
     @FXML
     ChoiceBox<Priority> menuPriority;
-
+    private ObservableList<UIUser> _executorsList;
+    private UITask _uiTask;
     @FXML
     private Button
             btnOK,
             btnCancel;
     @FXML
-    private TextField txtTitle;
+    private TextField
+            txtTitle,
+            txtUserAdd;
     @FXML
     private DateTimePicker dateTimePicker;
-    private UITask _uiTask;
 
     public EditDialogController() {
-        correctTime = Pattern.compile("^\\d{2}:\\d{2} \\d{2}.\\d{2}.\\d{4}$");
-    }
-
-    public UITask getUiTask() {
-        return _uiTask;
-    }
-
-    public void setUiTask(UITask uiTask) {
-        if (uiTask != null) {
-            txtTitle.setText(uiTask.getTitle());
-            dateTimePicker.setDateTimeValue(new TaskCalendar(uiTask.getDeadline()).getDateTime());
-            menuPriority.setValue(Priority.valueOf(uiTask.getPrio()));
-        } else {
-            txtTitle.setText("");
-            dateTimePicker.setPromptText("");
-            menuPriority.setValue(Priority.DEFAULT);
-        }
-        this._uiTask = uiTask;
+        _userService = new UserServiceImpl();
+        _executorsList = FXCollections.observableArrayList();
+        Pattern _correctTime = Pattern.compile("^\\d{2}:\\d{2} \\d{2}.\\d{2}.\\d{4}$");
     }
 
     @FXML
@@ -58,20 +52,74 @@ public class EditDialogController {
         menuPriority.setOnInputMethodTextChanged(event -> menuPriority.setValue(menuPriority.getSelectionModel().getSelectedItem()));
     }
 
-    public boolean editTask(ActionEvent actionEvent) { //TODO : add ability to add other users to executorList
+    public UITask getUiTask() {
+        return _uiTask;
+    }
+
+    public void setUiTask(UITask uiTask) {
+        _uiTask = uiTask;
+        setFields();
+    }
+
+    private void setFields() {
+        if (_uiTask != null) {
+            txtTitle.setText(_uiTask.getTitle());
+            dateTimePicker.setDateTimeValue(new TaskCalendar(_uiTask.getDeadline()).getDateTime());
+            menuPriority.setValue(Priority.valueOf(_uiTask.getPrio()));
+            personalCheck.setSelected(_uiTask.isPersonal());
+            _executorsList.clear();
+            for (SimpleLongProperty userId : _uiTask.getUserList())
+                _executorsList.add(new UIUser(_userService.getById(userId.get())));
+            listViewUsers.setVisible(true);
+            listViewUsers.setItems(_executorsList);
+            return;
+        }
+        txtTitle.setText("");
+        txtTitle.setPromptText("Input title");
+        dateTimePicker.setDateTimeValue(null);
+        dateTimePicker.setPromptText("HH:mm dd:MM:yyyy");
+        menuPriority.setValue(null);
+        personalCheck.setSelected(false);
+        listViewUsers.setVisible(false);
+    }
+
+    @FXML
+    private void addExecutor() {
+        if (_userService.getByLogin(txtUserAdd.getText()) == null) {
+            txtUserAdd.setText("");
+            txtUserAdd.setPromptText("No user found with this name");
+        } else {
+            UIUser newExecutor = new UIUser(_userService.getByLogin(txtUserAdd.getText()));
+            for (UIUser uiUser : _executorsList) {
+                if (uiUser.getId().equals(newExecutor.getId())) {
+                    txtUserAdd.setText("");
+                    txtUserAdd.setPromptText("Already added");
+                    return;
+                }
+            }
+            _executorsList.add(newExecutor);
+            txtUserAdd.setText("");
+            listViewUsers.setVisible(true);
+            listViewUsers.setItems(_executorsList);
+        }
+    }
+
+    @FXML
+    public boolean editTask(ActionEvent actionEvent) {
         boolean titleFieldIsEmpty = txtTitle.getText().isEmpty();
         Button source = (Button) actionEvent.getSource();
         if (source.getId().equals("btnCancel")) {
             closeDialog();
             return false;
         } else if (!titleFieldIsEmpty) {
-            ArrayList<Long> aloneExecutor = new ArrayList<>();
-            aloneExecutor.add(MainDialogController._currentUserID);
-            this.setUiTask(new UITask(MainDialogController._currentUserID,          //ownerID
-                    aloneExecutor,                                                  //userList(till not available, it'll add only owner to executors)
+            ArrayList<Long> listExecutor = new ArrayList<>();
+            for (UIUser uiUser : _executorsList) listExecutor.add(uiUser.getId());
+            listExecutor.add(MainDialogController._currentUserID);
+            setUiTask(new UITask(MainDialogController._currentUserID,               //ownerID
+                    listExecutor,                                                   //userList
                     txtTitle.getText(),                                             //title
                     new TaskCalendar(dateTimePicker.getDateTimeValue()).toString(), //Deadline
-                    true,                                                   //isPersonal(till not available, by default 'true')
+                    personalCheck.isSelected(),                                     //isPersonal
                     Status.IN_PROGRESS.toString(),                                  //status
                     menuPriority.getSelectionModel().getSelectedItem().toString()));//priority
             closeDialog();
@@ -90,7 +138,8 @@ public class EditDialogController {
 
     @FXML
     private void onCancelButton() {
-        this.setUiTask(null);
+        setUiTask(null);
+        _executorsList.clear();
         closeDialog();
     }
 }
