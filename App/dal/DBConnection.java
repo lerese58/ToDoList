@@ -6,15 +6,17 @@ import java.sql.SQLException;
 
 
 public class DBConnection {
+
     private static volatile DBConnection instance;
+
     private Connection _connection;
-    private String url = "jdbc:mysql://localhost:3306/todolist?useSSL=false";
-    private String user = "root";
-    private String pass = "rootroot";
 
     private DBConnection() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
+            String user = "root";
+            String url = "jdbc:mysql://localhost:3306/todolist?useSSL=false";
+            String pass = "rootroot";
             _connection = DriverManager.getConnection(url, user, pass);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
