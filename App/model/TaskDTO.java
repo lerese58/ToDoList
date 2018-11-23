@@ -1,17 +1,16 @@
-package App.bll;
+package App.model;
 
-import App.model.TaskCalendar;
-import App.model.TaskDTO;
 import App.ui.UITask;
 import App.utils.Priority;
 import App.utils.Status;
 import javafx.beans.property.SimpleLongProperty;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BLTask {
-    private final long _id;
+public class TaskDTO extends EntityDTO {
+
     private long _ownerID;
     private List<Long> _userList;
     private String _title;
@@ -20,55 +19,44 @@ public class BLTask {
     private Status _status;
     private Priority _prio;
 
-    private UserService _userService = new UserServiceImpl();
-
-    public BLTask(long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
-        _id = Math.abs(title.hashCode() + deadline.toString().hashCode() + ((Boolean) isPersonal).hashCode() + status.toString().hashCode() + prio.toString().hashCode());
+    public TaskDTO(long ownerID, List<Long> userList, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _ownerID = ownerID;
-        _userList = users;
+        _userList = userList;
         _title = title;
         _deadline = deadline;
         _isPersonal = isPersonal;
         _status = status;
         _prio = prio;
+        __modified = LocalDateTime.now();
     }
 
-    public BLTask(long id, long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
-        _id = id;
+    public TaskDTO(long id, long ownerID, List<Long> userList, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
+        __id = id;
         _ownerID = ownerID;
-        _userList = users;
+        _userList = userList;
         _title = title;
         _deadline = deadline;
         _isPersonal = isPersonal;
         _status = status;
         _prio = prio;
+        __modified = LocalDateTime.now();
     }
 
-    public BLTask(UITask uiTask) {
-        _id = uiTask.getId();
+    public TaskDTO(UITask uiTask) {
+        __id = uiTask.getId();
         _ownerID = uiTask.getOwner();
         _userList = new ArrayList<>();
-        for (SimpleLongProperty userID : uiTask.getUserList()) _userList.add(userID.getValue());
         _title = uiTask.getTitle();
+        for (SimpleLongProperty userID : uiTask.getUserList()) _userList.add(userID.get());
         _deadline = new TaskCalendar(uiTask.getDeadline());
         _isPersonal = uiTask.isPersonal();
         _status = Status.valueOf(uiTask.getStatus());
         _prio = Priority.valueOf(uiTask.getPrio());
-    }
-
-    public BLTask(TaskDTO taskDTO) {
-        _id = taskDTO.getId();
-        _ownerID = taskDTO.getOwnerID();
-        _userList = taskDTO.getUserList();
-        _title = taskDTO.getTitle();
-        _deadline = taskDTO.getDeadline();
-        _isPersonal = taskDTO.isPersonal();
-        _status = taskDTO.getStatus();
-        _prio = taskDTO.getPrio();
+        __modified = uiTask.getModified();
     }
 
     public long getId() {
-        return _id;
+        return __id;
     }
 
     public long getOwnerID() {
@@ -101,12 +89,15 @@ public class BLTask {
 
     @Override
     public String toString() {
-        return String.valueOf(getId()) +
-                "/" + getOwnerID() +
-                "/" + getTitle() +
-                "/" + getDeadline().toString() +
-                "/" + isPersonal() +
-                "/" + getStatus().toString() +
-                "/" + getPrio().toString();
+        final StringBuilder sb = new StringBuilder("");
+        sb.append(__id);
+        sb.append("/").append(_ownerID);
+        sb.append("/").append(_userList);
+        sb.append("/").append(_title);
+        sb.append("/").append(_deadline);
+        sb.append("/").append(_isPersonal);
+        sb.append("/").append(_status);
+        sb.append("/").append(_prio);
+        return sb.toString();
     }
 }

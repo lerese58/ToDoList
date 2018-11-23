@@ -3,20 +3,22 @@ package App.dal;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-
+/*
+ * TODO: get user,url,pass from another file/config
+ */
 
 public class DBConnection {
 
     private static volatile DBConnection instance;
+    private static String user = "root";
+    private static String url = "jdbc:mysql://localhost:3306/todolist?useSSL=false";
+    private static String pass = "rootroot";
 
     private Connection _connection;
 
     private DBConnection() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            String user = "root";
-            String url = "jdbc:mysql://localhost:3306/todolist?useSSL=false";
-            String pass = "rootroot";
             _connection = DriverManager.getConnection(url, user, pass);
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();

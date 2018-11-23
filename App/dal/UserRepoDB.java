@@ -1,25 +1,24 @@
 package App.dal;
 
+import App.model.UserDTO;
+
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
-public class UserRepoDB implements Repository<DBUser> {
+public class UserRepoDB implements Repository<UserDTO> {
 
-    private DBConnection _dbConnection;
-    private Connection _conn;
+    private Connection _conn = DBConnection.getInstance().getConnection();
 
     @Override
-    public ArrayList<DBUser> getAll() {
-        _dbConnection = DBConnection.getInstance();
-        _conn = _dbConnection.getConnection();
+    public List<UserDTO> getAll() {
         try {
             Statement statement = _conn.createStatement();
             ResultSet setOfUsers = statement.executeQuery("SELECT * FROM Users");
-            ArrayList<DBUser> allUsers = new ArrayList<>();
+            List<UserDTO> allUsers = new ArrayList<>();
             if (setOfUsers.next()) {
                 do {
                     allUsers.add(parseResultSet(setOfUsers));
-
                 }
                 while (setOfUsers.next());
             }
@@ -31,9 +30,23 @@ public class UserRepoDB implements Repository<DBUser> {
     }
 
     @Override
-    public DBUser getById(long id) {
-        _dbConnection = DBConnection.getInstance();
-        _conn = _dbConnection.getConnection();
+    public boolean create(UserDTO userDTO) {
+        try {
+            PreparedStatement statement = _conn.prepareStatement("INSERT into Users VALUES (?,?,?,?,?)");
+            statement.setLong(1, userDTO.getId());
+            statement.setString(2, userDTO.getName());
+            statement.setString(3, userDTO.getLogin());
+            statement.setString(4, userDTO.getPassword());
+            statement.setBoolean(5, userDTO.isReadyToOrder());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    @Override
+    public UserDTO getById(long id) {
         try {
             Statement getByIdStatement = _conn.createStatement();
             ResultSet userById = getByIdStatement.executeQuery("SELECT * FROM Users WHERE Users.ID = " + id);
@@ -47,64 +60,52 @@ public class UserRepoDB implements Repository<DBUser> {
     }
 
     @Override
-    public boolean removeById(long id) {
-        _dbConnection = DBConnection.getInstance();
-        _conn = _dbConnection.getConnection();
+    public boolean update(long ID, UserDTO userDTO) {
         try {
+            PreparedStatement statement = _conn.prepareStatement(
+                    "UPDATE Users SET userName=?,login=?,password=?,isReadyToOrder=? WHERE Users.ID=?");
+            statement.setString(1, userDTO.getName());
+            statement.setString(2, userDTO.getLogin());
+            statement.setString(3, userDTO.getPassword());
+            statement.setBoolean(4, userDTO.isReadyToOrder());
+            statement.setLong(5, ID);
+            statement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public boolean removeById(long id) {
+        try {
+            _conn.setAutoCommit(false);
             Statement removeUser = _conn.createStatement();
             Statement removeExecutor = _conn.createStatement();
             removeUser.executeUpdate("DELETE * FROM Users WHERE Users.ID = " + id);
-            removeExecutor.executeUpdate("delete * from task_userlist where UserID = " + id); // TODO: transaction
+            removeExecutor.executeUpdate("delete * from task_userlist where UserID = " + id);
+            _conn.commit();
             return true;
         } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    //@Override
-    //public boolean remove(DBUser dbUser) {
-    //    return removeById(dbUser.getId());
-    //}
-
-    @Override
-    public boolean update(long ID, DBUser dbUser) {
-        _dbConnection = DBConnection.getInstance();
-        PreparedStatement statement;
-        try {
-            if (getById(ID) == null) {
-                statement = _conn.prepareStatement("INSERT into Users VALUES (?,?,?,?,?)");
-                statement.setLong(1, dbUser.getId());
-                statement.setString(2, dbUser.getName());
-                statement.setString(3, dbUser.getLogin());
-                statement.setString(4, dbUser.getPassword());
-                statement.setBoolean(5, dbUser.isReadyToOrder());
-                statement.executeUpdate();
-                return true;
-            } else {
-                statement = _conn.prepareStatement("UPDATE Users SET userName=?,login=?,password=?,isReadyToOrder=? WHERE Users.ID=?");
-                statement.setString(1, dbUser.getName());
-                statement.setString(2, dbUser.getLogin());
-                statement.setString(3, dbUser.getPassword());
-                statement.setBoolean(4, dbUser.isReadyToOrder());
-                statement.setLong(5, ID);
-                statement.executeUpdate();
+            try {
+                _conn.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
             }
-            return true;
-        } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
     }
 
-    private DBUser parseResultSet(ResultSet resultSet) {
+    private UserDTO parseResultSet(ResultSet resultSet) {
         try {
             long ID = resultSet.getLong("ID");
             String name = resultSet.getString("userName");
             String login = resultSet.getString("login");
             String password = resultSet.getString("password");
             boolean isReadyToOrder = resultSet.getBoolean("isReadyToOrder");
-            return new DBUser(ID, name, login, password, isReadyToOrder);
+            return new UserDTO(ID, name, login, password, isReadyToOrder);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

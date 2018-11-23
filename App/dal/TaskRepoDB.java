@@ -1,28 +1,28 @@
 package App.dal;
 
 import App.model.TaskCalendar;
+import App.model.TaskDTO;
+import App.utils.NotifyStatus;
 import App.utils.Priority;
 import App.utils.Status;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
-public class TaskRepoDB implements Repository<DBTask> {
-    private DBConnection _dbConnection;
-    private Connection _conn;
+public class TaskRepoDB implements Repository<TaskDTO> {
+
+    private Connection _conn = DBConnection.getInstance().getConnection();
 
     @Override
-    public ArrayList<DBTask> getAll() { //TODO: get ALL tasks, mb i need to get only for this user
-        _dbConnection = DBConnection.getInstance();
-        _conn = _dbConnection.getConnection();
-        ArrayList<DBTask> taskList = new ArrayList<>();
+    public List<TaskDTO> getAll() { //TODO: get ALL tasks, mb i need to get only for this user
+        List<TaskDTO> taskList = new ArrayList<>();
         try {
             Statement getAllStatement = _conn.createStatement();
             ResultSet setOfTasks = getAllStatement.executeQuery("select * from task");
             if (setOfTasks.next()) {
                 do {
                     taskList.add(parseResultSet(setOfTasks));
-
                 }
                 while (setOfTasks.next());
             }
@@ -34,9 +34,34 @@ public class TaskRepoDB implements Repository<DBTask> {
     }
 
     @Override
-    public DBTask getById(long id) {
-        _dbConnection = DBConnection.getInstance();
-        _conn = _dbConnection.getConnection();
+    public boolean create(TaskDTO taskDTO) {
+        try {
+            _conn.setAutoCommit(false);
+            PreparedStatement insertStatement = _conn.prepareStatement("insert into task values (?,?,?,?,?,?,?)");
+            insertStatement.setLong(1, taskDTO.getId());
+            insertStatement.setLong(2, taskDTO.getOwnerID());
+            insertStatement.setString(3, taskDTO.getTitle());
+            insertStatement.setString(4, taskDTO.getDeadline().toString());
+            insertStatement.setBoolean(5, taskDTO.isPersonal());
+            insertStatement.setString(6, taskDTO.getStatus().toString());
+            insertStatement.setString(7, taskDTO.getPrio().toString());
+            insertStatement.executeUpdate();
+            changeUserList(taskDTO.getId(), taskDTO);
+            _conn.commit();
+            return true;
+        } catch (SQLException e) {
+            try {
+                _conn.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public TaskDTO getById(long id) {
         try {
             Statement getByIdStatement = _conn.createStatement();
             ResultSet taskById = getByIdStatement.executeQuery("select * from task where task.ID = " + id);
@@ -50,83 +75,75 @@ public class TaskRepoDB implements Repository<DBTask> {
     }
 
     @Override
-    public boolean removeById(long id) {
-        _dbConnection = DBConnection.getInstance();
-        _conn = _dbConnection.getConnection();
+    public boolean update(long ID, TaskDTO taskDTO) { // TODO: have an idea to do some part of code in BLL
         try {
-            Statement removeTask = _conn.createStatement();
-            Statement removeExecutors = _conn.createStatement();
-            removeTask.executeUpdate("delete from task where ID = " + id);
-            removeExecutors.executeUpdate("delete from task_userlist where TaskID = " + id);//TODO: transaction
+            _conn.setAutoCommit(false);
+            PreparedStatement updateStatement = _conn.prepareStatement(
+                    "UPDATE task SET ownerID=?,Title=?,Deadline=?,isPersonal=?,Status=?,Prio=? WHERE ID = ?");
+            updateStatement.setLong(1, taskDTO.getOwnerID());
+            updateStatement.setString(2, taskDTO.getTitle());
+            updateStatement.setString(3, taskDTO.getDeadline().toString());
+            updateStatement.setBoolean(4, taskDTO.isPersonal());
+            updateStatement.setString(5, taskDTO.getStatus().toString());
+            updateStatement.setString(6, taskDTO.getPrio().toString());
+            updateStatement.setLong(7, ID);
+            updateStatement.executeUpdate();
+            changeUserList(ID, taskDTO);
+            _conn.commit();
             return true;
         } catch (SQLException e) {
+            try {
+                _conn.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
             return false;
         }
     }
 
     @Override
-    public boolean update(long ID, DBTask dbTask) { // TODO: have an idea to do some part of code in BLL
-        _dbConnection = DBConnection.getInstance();
-        _conn = _dbConnection.getConnection();
-        if (getById(ID) == null) { // create task
+    public boolean removeById(long id) {
+        try {
+            _conn.setAutoCommit(false);
+            Statement removeTask = _conn.createStatement();
+            Statement removeExecutors = _conn.createStatement();
+            removeTask.executeUpdate("delete from task where ID = " + id);
+            removeExecutors.executeUpdate("delete from task_userlist where TaskID = " + id);//TODO: transaction
+            _conn.commit();
+            return true;
+        } catch (SQLException e) {
             try {
-                PreparedStatement insertStatement = _conn.prepareStatement("insert into task values (?,?,?,?,?,?,?)");
-                insertStatement.setLong(1, dbTask.getId());
-                insertStatement.setLong(2, dbTask.getOwnerID());
-                insertStatement.setString(3, dbTask.getTitle());
-                insertStatement.setString(4, dbTask.getDeadline().toString());
-                insertStatement.setBoolean(5, dbTask.isPersonal());
-                insertStatement.setString(6, dbTask.getStatus().toString());
-                insertStatement.setString(7, dbTask.getPrio().toString());
-                insertStatement.executeUpdate();
-                changeUserList(ID, dbTask); //TODO: transaction
-                return true;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
+                _conn.rollback();
+            } catch (SQLException e1) {
+                e1.printStackTrace();
             }
-        } else { // edit task
-            try {
-                PreparedStatement updateStatement = _conn.prepareStatement("UPDATE task SET ownerID=?,Title=?,Deadline=?,isPersonal=?,Status=?,Prio=?" +
-                        " WHERE ID = ?");
-                updateStatement.setLong(1, dbTask.getOwnerID());
-                updateStatement.setString(2, dbTask.getTitle());
-                updateStatement.setString(3, dbTask.getDeadline().toString());
-                updateStatement.setBoolean(4, dbTask.isPersonal());
-                updateStatement.setString(5, dbTask.getStatus().toString());
-                updateStatement.setString(6, dbTask.getPrio().toString());
-                updateStatement.setLong(7, ID);
-                changeUserList(ID, dbTask);
-                updateStatement.executeUpdate();
-                changeUserList(ID, dbTask); // TODO : Transaction
-                return true;
-            } catch (SQLException e) {
-                e.printStackTrace();
-                return false;
-            }
+            e.printStackTrace();
+            return false;
         }
     }
 
-    private void changeUserList(long ID, DBTask dbTask) { // TODO: transaction
+    private void changeUserList(long ID, TaskDTO taskDTO) { // TODO: transaction
         try {
             Statement taskUsers = _conn.createStatement();
             ResultSet usersTask = taskUsers.executeQuery("SELECT UserID FROM task_userlist WHERE TaskID = " + ID);
             ArrayList<Long> dbUserList = new ArrayList<>();
             while (usersTask.next())
                 dbUserList.add(usersTask.getLong("UserID"));                  //saved users for task
-            if (dbUserList.size() > dbTask.getUserList().size()) {                      //if some users were deleted
-                dbUserList.removeIf(userID -> dbTask.getUserList().contains(userID));   //need to DELETE this users from Task_UserList
+            if (dbUserList.size() > taskDTO.getUserList().size()) {                      //if some users were deleted
+                dbUserList.removeIf(userID -> taskDTO.getUserList().contains(userID));   //need to delete THIS users from Task_UserList
                 Statement deleteUsers = _conn.createStatement();
                 for (Long userId : dbUserList) {
                     deleteUsers.executeUpdate("DELETE FROM task_userlist WHERE UserID = " + userId);
                 }
-            } else if (dbUserList.size() < dbTask.getUserList().size()) {                  //if some users were added
-                ArrayList<Long> tmp = (ArrayList<Long>) dbTask.getUserList().clone();
-                tmp.removeIf(dbUserList::contains);                                      //need to INSERT this users to Task_UsersList
+            } else if (dbUserList.size() < taskDTO.getUserList().size()) {                //if some users were added
+                List<Long> tmp = new ArrayList<>(taskDTO.getUserList());
+                tmp.removeIf(dbUserList::contains);                                      //need to insert THIS users to Task_UsersList
                 Statement insertUsers = _conn.createStatement();
                 for (Long userId : tmp) {
-                    insertUsers.executeUpdate("INSERT into task_userlist (TaskID, UserID, NotifyStatus) VALUES (" + dbTask.getId() + "," + userId + "," + "'ADDED'" + ")");
+                    insertUsers.executeUpdate(
+                            "INSERT into task_userlist (TaskID, UserID, NotifyStatus) " +
+                                    "VALUES (" + taskDTO.getId() + "," + userId + "," + "'" + NotifyStatus.NON_SEEN.toString() + "')");
                 }
             }
         } catch (SQLException e) {
@@ -134,7 +151,7 @@ public class TaskRepoDB implements Repository<DBTask> {
         }
     }
 
-    private DBTask parseResultSet(ResultSet resultSet) {
+    private TaskDTO parseResultSet(ResultSet resultSet) {
         try {
             long ID = resultSet.getInt("ID");
             long ownerID = resultSet.getInt("ownerID");
@@ -150,7 +167,7 @@ public class TaskRepoDB implements Repository<DBTask> {
             boolean isPersonal = resultSet.getBoolean("isPersonal");
             Status status = Status.valueOf(resultSet.getString("Status"));
             Priority prio = Priority.valueOf(resultSet.getString("Prio"));
-            return new DBTask(ID, ownerID, usersForThis, title, deadline, isPersonal, status, prio);
+            return new TaskDTO(ID, ownerID, usersForThis, title, deadline, isPersonal, status, prio);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;

@@ -57,7 +57,7 @@ public class TaskInfoDialogController {
 
     @FXML
     private void initialize() {
-
+        _execList.clear();
     }
 
     @FXML
@@ -83,12 +83,13 @@ public class TaskInfoDialogController {
     private void setFields() {
         if (_uiTask != null) {
             titleLabel.setText(_uiTask.getTitle());
-            ownerLabel.setText(String.valueOf(_uiTask.getOwnerID()));
+            ownerLabel.setText(String.valueOf(_uiTask.getOwner()));
             deadlineLabel.setText(_uiTask.getDeadline());
             personalLabel.setText(_uiTask.isPersonal() ? "Yes" : "No");
             statusLabel.setText(_uiTask.getStatus());
             prioLabel.setText(_uiTask.getPrio());
             tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
+            _execList.clear();
             for (SimpleLongProperty userId : _uiTask.getUserList()) {
                 _execList.add(new UIUser(_userService.getById(userId.getValue())));
             }

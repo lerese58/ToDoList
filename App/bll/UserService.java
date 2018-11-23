@@ -1,18 +1,20 @@
 package App.bll;
 
-import java.util.ArrayList;
+import App.model.UserDTO;
+
+import java.util.List;
 
 public interface UserService {
 
-    ArrayList<BLUser> getAllUsers();
+    List<UserDTO> getAllUsers();
 
-    BLUser getById(long id);
+    UserDTO getById(long id);
 
-    BLUser getByLoginPassword(String login, String password);
+    UserDTO getByLoginPassword(String login, String password);
 
-    BLUser getByLogin(String login);
+    UserDTO getByLogin(String login);
 
     boolean removeById(long id);
 
-    boolean update(long id, BLUser blUser);
+    boolean update(long id, UserDTO userDTO);
 }

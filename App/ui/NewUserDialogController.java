@@ -1,8 +1,8 @@
 package App.ui;
 
-import App.bll.BLUser;
 import App.bll.UserService;
 import App.bll.UserServiceImpl;
+import App.model.UserDTO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -54,11 +54,12 @@ public class NewUserDialogController {
             return;
         Button source = (Button) actionEvent.getSource();
         if (source.getId().equals("btnCancel")) {
+
             closeDialog();
         } else if (source.getId().equals("btnOK")) {
             if (isDataCorrect() == 0) {
                 UIUser uiUser = new UIUser(txtName.getText(), txtLogin.getText(), txtPassword.getText(), checkBoxIsOpen.isSelected());
-                _userService.update(uiUser.getId(), new BLUser(uiUser));
+                _userService.update(uiUser.getId(), new UserDTO(uiUser));
                 closeDialog();
             } else if (isDataCorrect() == 1) {
                 txtLogin.setText("");
@@ -74,6 +75,9 @@ public class NewUserDialogController {
 
     private void closeDialog() {
         Stage stage = (Stage) btnCancel.getScene().getWindow();
+        txtName.setText("");
+        txtLogin.setText("");
+        txtPassword.setText("");
         stage.close();
     }
 }

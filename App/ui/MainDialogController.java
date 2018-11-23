@@ -1,9 +1,11 @@
 package App.ui;
 
-import App.bll.BLTask;
 import App.bll.TaskService;
 import App.bll.TaskServiceImpl;
+import App.bll.UserService;
+import App.bll.UserServiceImpl;
 import App.model.TaskCalendar;
+import App.model.TaskDTO;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -21,11 +23,17 @@ import java.util.Comparator;
 
 /*
  * TODO: set a date picker + time
+ * TODO: add ability to edit task status or not delete from db, just mark as 'DELETED'
+ * TODO: automapper
+ * TODO: add notifications;
+ * TODO: add notifyStatus to App
+ * TODO: choose task/user politics(remove owner from executors, remove yourself from executors, edit other user's task, ...)
  * */
 public class MainDialogController {
 
     static long _currentUserID;
     private final TaskService _taskService;
+    private final UserService _userService;
     private ObservableList<UITask> _data;
     private Stage _mainStage;
     private Stage _editStage;
@@ -48,14 +56,14 @@ public class MainDialogController {
     private TableView<UITask> tableView;
     @FXML
     private TableColumn<UITask, String>
+            columnOwner,
             columnTitle,
             columnDeadline,
             columnStatus,
             columnPriority;
     @FXML
     private TableColumn<UITask, Long>
-            columnID,
-            columnOwner;
+            columnID;
     @FXML
     private TableColumn<UITask, Boolean>
             columnPersonal;
@@ -64,6 +72,7 @@ public class MainDialogController {
 
     public MainDialogController() {
         _taskService = new TaskServiceImpl();
+        _userService = new UserServiceImpl();
         _data = FXCollections.observableArrayList();
         _editLoader = new FXMLLoader();
         _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
@@ -85,6 +94,7 @@ public class MainDialogController {
 
     public MainDialogController(TaskService taskService) {
         _taskService = taskService;
+        _userService = new UserServiceImpl();
         _data = FXCollections.observableArrayList();
         _editLoader = new FXMLLoader();
         _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
@@ -145,8 +155,7 @@ public class MainDialogController {
                 onDeleteAction(selectedTask);
                 break;
             case "btnEdit":
-                _editDialogController.setUiTask(selectedTask);
-                onEditAction();
+                onEditAction(selectedTask);
                 break;
         }
         _editDialogController.setUiTask(null);
@@ -166,8 +175,7 @@ public class MainDialogController {
                 onDeleteAction(selectedTask);
                 break;
             case "menuItemEdit":
-                _editDialogController.setUiTask(selectedTask);
-                onEditAction();
+                onEditAction(selectedTask);
                 break;
             case "menuItemProperties":
                 _taskInfoController.setUiTask(selectedTask);
@@ -185,32 +193,34 @@ public class MainDialogController {
     private void fillTable() {
         columnID.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
         columnTitle.setCellValueFactory(cellData -> cellData.getValue().titleProperty());
-        columnOwner.setCellValueFactory(cellData -> cellData.getValue().ownerIdProperty().asObject());
+        columnOwner.setCellValueFactory(cellData -> new UIUser(_userService.getById(cellData.getValue().getOwner())).loginProperty());
         columnDeadline.setCellValueFactory(cellData -> cellData.getValue().deadlineProperty());
         columnPersonal.setCellValueFactory(cellData -> cellData.getValue().isPersonalProperty());
         columnStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
         columnPriority.setCellValueFactory(cellData -> cellData.getValue().prioProperty());
-        for (BLTask blTask : _taskService.getListForThisUser(_currentUserID)) {
-            _data.add(new UITask(blTask));
+        for (TaskDTO taskDTO : _taskService.getListForThisUser(_currentUserID)) {
+            _data.add(new UITask(taskDTO));
         }
     }
 
     private void onAddAction() {
+        _editDialogController.setUiTask(null);
         showEditDialog();
         if (_editDialogController.getUiTask() == null)
             return;
-        _taskService.update(_editDialogController.getUiTask().getId(), new BLTask(_editDialogController.getUiTask()));
+        _taskService.update(_editDialogController.getUiTask().getId(), new TaskDTO(_editDialogController.getUiTask()));
     }
 
     private void onDeleteAction(UITask selected) {
         _taskService.removeById(selected.getId());
     }
 
-    private void onEditAction() {
+    private void onEditAction(UITask selectedTask) {
+        _editDialogController.setUiTask(selectedTask);
         showEditDialog();
         if (_editDialogController.getUiTask() == null)
             return;
-        _taskService.update(_editDialogController.getUiTask().getId(), new BLTask(_editDialogController.getUiTask()));
+        _taskService.update(selectedTask.getId(), new TaskDTO(_editDialogController.getUiTask()));
     }
 
     private void showEditDialog() {

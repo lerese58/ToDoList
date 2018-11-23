@@ -1,6 +1,6 @@
 package App.ui;
 
-import App.bll.BLUser;
+import App.model.UserDTO;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -20,12 +20,12 @@ public class UIUser {
         _isReadyToOrder = new SimpleBooleanProperty(isReadyToOrder);
     }
 
-    public UIUser(BLUser blUser) {
-        _id = new SimpleLongProperty(blUser.getId());
-        _name = new SimpleStringProperty(blUser.getName());
-        _login = new SimpleStringProperty(blUser.getLogin());
-        _password = new SimpleStringProperty(blUser.getPassword());
-        _isReadyToOrder = new SimpleBooleanProperty(blUser.isReadyToOrder());
+    public UIUser(UserDTO userDTO) {
+        _id = new SimpleLongProperty(userDTO.getId());
+        _name = new SimpleStringProperty(userDTO.getName());
+        _login = new SimpleStringProperty(userDTO.getLogin());
+        _password = new SimpleStringProperty(userDTO.getPassword());
+        _isReadyToOrder = new SimpleBooleanProperty(userDTO.isReadyToOrder());
     }
 
     public UIUser(String name, String login, String password, Boolean isReadyToOrder) {

@@ -1,61 +1,64 @@
 package App.bll;
 
-import App.dal.DBTask;
 import App.dal.Repository;
 import App.dal.TaskRepoDB;
+import App.model.TaskDTO;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class TaskServiceImpl implements TaskService {
 
-    private final Repository<DBTask> _repository;
+    private final Repository<TaskDTO> _repository;
 
     public TaskServiceImpl() {
         _repository = new TaskRepoDB();
     }
 
-    public TaskServiceImpl(Repository<DBTask> repository) {
+    public TaskServiceImpl(Repository<TaskDTO> repository) {
         _repository = repository;
     }
 
     @Override
-    public ArrayList<BLTask> getTasks() {
-        ArrayList<BLTask> blTasks = new ArrayList<>();
-        for (DBTask dbtask : _repository.getAll())
-            blTasks.add(new BLTask(dbtask));
-        return blTasks;
+    public List<TaskDTO> getTasks() {
+        List<TaskDTO> tasks = new ArrayList<>(_repository.getAll());
+        return tasks;
     }
 
     @Override
-    public ArrayList<BLTask> getListForThisUser(long userID) {
-        ArrayList<BLTask> tasks = new ArrayList<>();
-        for (DBTask dbtask : _repository.getAll()) {
-            if (dbtask.getUserList().contains(userID))
-                tasks.add(new BLTask(dbtask));
+    public List<TaskDTO> getListForThisUser(long userID) {
+
+
+        List<TaskDTO> tasks = new ArrayList<>();
+
+
+        for (TaskDTO taskDTO : _repository.getAll()) {
+            if (taskDTO.getUserList().contains(userID))
+                tasks.add(taskDTO);
         }
         return tasks;
     }
 
-    public BLTask getByID(long id) {
-        return new BLTask(_repository.getById(id));
+    public TaskDTO getByID(long id) {
+        return _repository.getById(id);
     }
 
     @Override
-    public ArrayList<BLTask> getListBefore(LocalDateTime time) {
-        ArrayList<BLTask> deadlineTasks = new ArrayList<>();
-        for (DBTask dbtask : _repository.getAll())
-            if (dbtask.getDeadline().getDateTime().isBefore(time))
-                deadlineTasks.add(new BLTask(dbtask));
+    public List<TaskDTO> getListBefore(LocalDateTime time) {
+        List<TaskDTO> deadlineTasks = new ArrayList<>();
+        for (TaskDTO taskDTO : _repository.getAll())
+            if (taskDTO.getDeadline().getDateTime().isBefore(time))
+                deadlineTasks.add(taskDTO);
         return deadlineTasks;
     }
 
     @Override
-    public ArrayList<BLTask> getListAfter(LocalDateTime time) {
-        ArrayList<BLTask> tasks = new ArrayList<>();
-        for (DBTask dbtask : _repository.getAll())
-            if (dbtask.getDeadline().getDateTime().isAfter(time))
-                tasks.add(new BLTask(dbtask));
+    public List<TaskDTO> getListAfter(LocalDateTime time) {
+        List<TaskDTO> tasks = new ArrayList<>();
+        for (TaskDTO taskDTO : _repository.getAll())
+            if (taskDTO.getDeadline().getDateTime().isAfter(time))
+                tasks.add(taskDTO);
         return tasks;
     }
 
@@ -66,23 +69,17 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public boolean remove(BLTask blTask) {
-        _repository.removeById(blTask.getId());
-        return false;
-    }
-
-    @Override
     public boolean removeBefore(LocalDateTime time) {
-        for (DBTask dbTask : _repository.getAll()) {
-            if (dbTask.getDeadline().getDateTime().isBefore(time)) {
-                _repository.removeById(dbTask.getId());
+        for (TaskDTO taskDTO : _repository.getAll()) {
+            if (taskDTO.getDeadline().getDateTime().isBefore(time)) {
+                _repository.removeById(taskDTO.getId());
             }
         }
         return true;
     }
 
     @Override
-    public boolean update(long ID, BLTask task) {
-        return _repository.update(ID, new DBTask(task));
+    public boolean update(long ID, TaskDTO task) {
+        return _repository.update(ID, task);
     }
 }

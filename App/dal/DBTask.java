@@ -5,19 +5,19 @@ import App.model.TaskCalendar;
 import App.utils.Priority;
 import App.utils.Status;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class DBTask {
     private final long _id;
     private long _ownerID;
-    private ArrayList<Long> _userList;
+    private List<Long> _userList;
     private String _title;
     private TaskCalendar _deadline;
     private boolean _isPersonal;
     private Status _status;
     private Priority _prio;
 
-    public DBTask(long ownerID, ArrayList<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
+    public DBTask(long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _id = Math.abs(((Long) ownerID).hashCode() + title.hashCode() + deadline.toString().hashCode() + ((Boolean) isPersonal).hashCode() + status.toString().hashCode() + prio.toString().hashCode());
         _ownerID = ownerID;
         _userList = users;
@@ -28,7 +28,7 @@ public class DBTask {
         _prio = prio;
     }
 
-    public DBTask(long id, long ownerID, ArrayList<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
+    public DBTask(long id, long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _id = id;
         _ownerID = ownerID;
         _userList = users;
@@ -58,7 +58,7 @@ public class DBTask {
         return _ownerID;
     }
 
-    public ArrayList<Long> getUserList() {
+    public List<Long> getUserList() {
         return _userList;
     }
 

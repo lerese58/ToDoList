@@ -1,14 +1,18 @@
 package App.dal;
 
-import java.util.ArrayList;
+import App.model.EntityDTO;
 
-public interface Repository<T> {
+import java.util.List;
 
-    ArrayList<T> getAll();
+public interface Repository<T extends EntityDTO> {
+
+    List<T> getAll();
 
     T getById(long id);
 
     boolean removeById(long id);
 
     boolean update(long ID, T dbObject);
+
+    boolean create(T dbObject);
 }

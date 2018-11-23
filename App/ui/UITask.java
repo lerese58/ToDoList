@@ -1,25 +1,30 @@
 package App.ui;
 
-import App.bll.BLTask;
+import App.bll.UserService;
+import App.bll.UserServiceImpl;
 import App.model.TaskCalendar;
+import App.model.TaskDTO;
 import App.utils.Priority;
 import App.utils.Status;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-
+import java.util.List;
 
 public class UITask {
+    UserService _userService = new UserServiceImpl();
     private SimpleLongProperty _id;
     private SimpleLongProperty _ownerID;
     private SimpleStringProperty _title;
-    private ArrayList<SimpleLongProperty> _userList;
+    private List<SimpleLongProperty> _userList;
     private SimpleStringProperty _deadline;
     private SimpleBooleanProperty _isPersonal;
     private SimpleStringProperty _status;
     private SimpleStringProperty _prio;
+    private LocalDateTime _modified;
 
     public UITask(Long id, Long ownerID, ArrayList<Long> users, String title, TaskCalendar deadline, Boolean isPersonal, Status status, Priority prio) {
         _id = new SimpleLongProperty(id);
@@ -31,9 +36,10 @@ public class UITask {
         _isPersonal = new SimpleBooleanProperty(isPersonal);
         _status = new SimpleStringProperty(status.toString());
         _prio = new SimpleStringProperty(prio.toString());
+        _modified = LocalDateTime.now();
     }
 
-    public UITask(Long ownerID, ArrayList<Long> users, String title, String deadline, Boolean isPersonal, String status, String prio) {
+    public UITask(Long ownerID, List<Long> users, String title, String deadline, Boolean isPersonal, String status, String prio) {
         _id = new SimpleLongProperty(Math.abs(title.hashCode() + deadline.hashCode() + status.hashCode() + prio.hashCode()));
         _ownerID = new SimpleLongProperty(ownerID);
         _userList = new ArrayList<>();
@@ -43,18 +49,20 @@ public class UITask {
         _isPersonal = new SimpleBooleanProperty(isPersonal);
         _status = new SimpleStringProperty(status);
         _prio = new SimpleStringProperty(prio);
+        _modified = LocalDateTime.now();
     }
 
-    public UITask(BLTask blTask) {
-        _id = new SimpleLongProperty(blTask.getId());
-        _ownerID = new SimpleLongProperty(blTask.getOwnerID());
+    public UITask(TaskDTO taskDTO) {
+        _id = new SimpleLongProperty(taskDTO.getId());
+        _ownerID = new SimpleLongProperty(taskDTO.getOwnerID());
         _userList = new ArrayList<>();
-        for (Long userID : blTask.getUserList()) _userList.add(new SimpleLongProperty(userID));
-        _title = new SimpleStringProperty(blTask.getTitle());
-        _deadline = new SimpleStringProperty(blTask.getDeadline().toString());
-        _isPersonal = new SimpleBooleanProperty(blTask.isPersonal());
-        _status = new SimpleStringProperty(blTask.getStatus().toString());
-        _prio = new SimpleStringProperty(blTask.getPrio().toString());
+        for (Long userID : taskDTO.getUserList()) _userList.add(new SimpleLongProperty(userID));
+        _title = new SimpleStringProperty(taskDTO.getTitle());
+        _deadline = new SimpleStringProperty(taskDTO.getDeadline().toString());
+        _isPersonal = new SimpleBooleanProperty(taskDTO.isPersonal());
+        _status = new SimpleStringProperty(taskDTO.getStatus().toString());
+        _prio = new SimpleStringProperty(taskDTO.getPrio().toString());
+        _modified = taskDTO.getModified();
     }
 
     public long getId() {
@@ -69,11 +77,11 @@ public class UITask {
         return _id;
     }
 
-    public long getOwnerID() {
+    public Long getOwner() {
         return _ownerID.get();
     }
 
-    public void setOwnerID(long ownerID) {
+    public void setOwnerID(Long ownerID) {
         _ownerID.set(ownerID);
     }
 
@@ -93,11 +101,11 @@ public class UITask {
         return _title;
     }
 
-    public ArrayList<SimpleLongProperty> getUserList() {
+    public List<SimpleLongProperty> getUserList() {
         return _userList;
     }
 
-    public void setUserList(ArrayList<SimpleLongProperty> userList) {
+    public void setUserList(List<SimpleLongProperty> userList) {
         _userList = userList;
     }
 
@@ -147,5 +155,9 @@ public class UITask {
 
     public SimpleStringProperty prioProperty() {
         return _prio;
+    }
+
+    public LocalDateTime getModified() {
+        return _modified;
     }
 }

@@ -1,51 +1,49 @@
 package App.bll;
 
-import App.dal.DBUser;
 import App.dal.Repository;
 import App.dal.UserRepoDB;
+import App.model.UserDTO;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class UserServiceImpl implements UserService {
 
-    private final Repository<DBUser> _repository;
+    private final Repository<UserDTO> _repository;
 
     public UserServiceImpl() {
         _repository = new UserRepoDB();
     }
 
-    public UserServiceImpl(Repository<DBUser> userRepository) {
+    public UserServiceImpl(Repository<UserDTO> userRepository) {
         _repository = userRepository;
     }
 
     @Override
-    public ArrayList<BLUser> getAllUsers() {
-        ArrayList<BLUser> allUsers = new ArrayList<>();
-        for (DBUser dbUser : _repository.getAll()) {
-            allUsers.add(new BLUser(dbUser));
-        }
+    public List<UserDTO> getAllUsers() {
+        List<UserDTO> allUsers = new ArrayList<>(_repository.getAll());
         return allUsers;
     }
 
     @Override
-    public BLUser getById(long id) {
-        return new BLUser(_repository.getById(id));
+    public UserDTO getById(long id) {
+        return _repository.getById(id);
     }
 
     @Override
-    public BLUser getByLoginPassword(String login, String password) {
-        for (DBUser dbUser : _repository.getAll()) {
-            if (login.equals(dbUser.getLogin()) && password.equals(dbUser.getPassword()))
-                return new BLUser(dbUser);
+    public UserDTO getByLoginPassword(String login, String password) {
+        for (UserDTO userDTO : _repository.getAll()) {
+            if (login.equals(userDTO.getLogin()) && password.equals(userDTO.getPassword()))
+                return userDTO;
         }
         return null;
     }
 
     @Override
-    public BLUser getByLogin(String login) {
-        for (DBUser dbUser : _repository.getAll()) {
-            if (login.equals(dbUser.getLogin()))
-                return new BLUser(dbUser);
+    public UserDTO getByLogin(String login) {
+        for (UserDTO userDTO : _repository.getAll()) {
+            if (login.equals(userDTO.getLogin()))
+                return userDTO;
         }
         return null;
     }
@@ -56,7 +54,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean update(long id, BLUser blUser) {
-        return _repository.update(id, new DBUser(blUser));
+    public boolean update(long id, UserDTO userDTO) {
+        return _repository.update(id, userDTO);
     }
 }

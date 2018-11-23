@@ -23,15 +23,15 @@ public class EditDialogController {
     CheckBox personalCheck;
     @FXML
     ListView<UIUser> listViewUsers;
-    private UserService _userService;
-
     @FXML
     ChoiceBox<Priority> menuPriority;
+    private UserService _userService;
     private ObservableList<UIUser> _executorsList;
     private UITask _uiTask;
     @FXML
     private Button
             btnOK,
+            btnRemove,
             btnCancel;
     @FXML
     private TextField
@@ -80,6 +80,7 @@ public class EditDialogController {
         dateTimePicker.setPromptText("HH:mm dd:MM:yyyy");
         menuPriority.setValue(null);
         personalCheck.setSelected(false);
+        _executorsList.clear();
         listViewUsers.setVisible(false);
     }
 
@@ -105,6 +106,18 @@ public class EditDialogController {
     }
 
     @FXML
+    private void removeExecutor() {
+        UIUser selected = listViewUsers.getSelectionModel().getSelectedItem();
+        if (selected.getId() == MainDialogController._currentUserID) {
+            txtUserAdd.setText("");
+            txtUserAdd.setPromptText("You can't remove yourself");
+            return;
+        }
+        _executorsList.removeAll(selected);
+        listViewUsers.setItems(_executorsList);
+    }
+
+    @FXML
     public boolean editTask(ActionEvent actionEvent) {
         boolean titleFieldIsEmpty = txtTitle.getText().isEmpty();
         Button source = (Button) actionEvent.getSource();
@@ -113,8 +126,10 @@ public class EditDialogController {
             return false;
         } else if (!titleFieldIsEmpty) {
             ArrayList<Long> listExecutor = new ArrayList<>();
-            for (UIUser uiUser : _executorsList) listExecutor.add(uiUser.getId());
-            listExecutor.add(MainDialogController._currentUserID);
+            for (UIUser uiUser : _executorsList)
+                listExecutor.add(uiUser.getId());
+            if (!(listExecutor.contains(MainDialogController._currentUserID)))
+                listExecutor.add(MainDialogController._currentUserID);
             setUiTask(new UITask(MainDialogController._currentUserID,               //ownerID
                     listExecutor,                                                   //userList
                     txtTitle.getText(),                                             //title
@@ -122,6 +137,7 @@ public class EditDialogController {
                     personalCheck.isSelected(),                                     //isPersonal
                     Status.IN_PROGRESS.toString(),                                  //status
                     menuPriority.getSelectionModel().getSelectedItem().toString()));//priority
+
             closeDialog();
             return true;
         } else {

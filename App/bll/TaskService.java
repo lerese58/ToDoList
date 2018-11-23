@@ -1,26 +1,26 @@
 package App.bll;
 
+import App.model.TaskDTO;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.List;
 
 public interface TaskService {
 
-    ArrayList<BLTask> getTasks();
+    List<TaskDTO> getTasks();
 
-    ArrayList<BLTask> getListForThisUser(long userID);
+    List<TaskDTO> getListForThisUser(long userID);
 
-    BLTask getByID(long id);
+    TaskDTO getByID(long id);
 
-    ArrayList<BLTask> getListBefore(LocalDateTime time);
+    List<TaskDTO> getListBefore(LocalDateTime time);
 
-    ArrayList<BLTask> getListAfter(LocalDateTime time);
+    List<TaskDTO> getListAfter(LocalDateTime time);
 
     boolean removeById(long id);
 
-    boolean remove(BLTask blTask);
-
     boolean removeBefore(LocalDateTime time);
 
-    boolean update(long ID, BLTask task);
+    boolean update(long ID, TaskDTO task);
 
 }
