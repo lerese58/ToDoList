@@ -11,6 +11,8 @@ public interface TaskService {
 
     List<TaskDTO> getListForThisUser(long userID);
 
+    List<TaskDTO> getNotificationForUser(long userID);
+
     TaskDTO getByID(long id);
 
     List<TaskDTO> getListBefore(LocalDateTime time);
@@ -23,4 +25,5 @@ public interface TaskService {
 
     boolean update(long ID, TaskDTO task);
 
+    boolean create(TaskDTO task);
 }

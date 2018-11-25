@@ -2,9 +2,10 @@ package App.ui;
 
 import App.bll.UserService;
 import App.bll.UserServiceImpl;
-import javafx.beans.property.SimpleLongProperty;
+import App.utils.NotifyStatus;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -16,10 +17,10 @@ import javafx.stage.Stage;
 /*
  * TODO: set btnEdit
  */
-public class TaskInfoDialogController {
+public class TaskInfoController {
 
     private UITask _uiTask;
-    private ObservableList<UIUser> _execList;
+    private ObservableMap<Long, NotifyStatus> _execMap;
     private UserService _userService;
 
     @FXML
@@ -40,14 +41,14 @@ public class TaskInfoDialogController {
     @FXML
     private TableColumn<UIUser, String> tableColumnExecutors;
 
-    public TaskInfoDialogController() {
+    public TaskInfoController() {
         _userService = new UserServiceImpl();
-        _execList = FXCollections.observableArrayList();
+        _execMap = FXCollections.observableHashMap();
     }
 
-    public TaskInfoDialogController(UserService userService) {
+    public TaskInfoController(UserService userService) {
         _userService = userService;
-        _execList = FXCollections.observableArrayList();
+        _execMap = FXCollections.observableHashMap();
     }
 
     public void setUiTask(UITask uiTask) {
@@ -57,7 +58,7 @@ public class TaskInfoDialogController {
 
     @FXML
     private void initialize() {
-        _execList.clear();
+        _execMap.clear();
     }
 
     @FXML
@@ -89,17 +90,17 @@ public class TaskInfoDialogController {
             statusLabel.setText(_uiTask.getStatus());
             prioLabel.setText(_uiTask.getPrio());
             tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
-            _execList.clear();
-            for (SimpleLongProperty userId : _uiTask.getUserList()) {
-                _execList.add(new UIUser(_userService.getById(userId.getValue())));
-            }
-            tableExecutors.setItems(_execList);
+            _execMap.clear();
+            _execMap.putAll(_uiTask.getUserList());
+            ObservableList<UIUser> observableList = FXCollections.observableArrayList();
+            _execMap.forEach((userID, notifyStatus) -> observableList.add(new UIUser(_userService.getById(userID))));
+            tableExecutors.setItems(observableList);
         }
     }
 
     private void closeDialog() {
         Stage stage = (Stage) btnCancel.getScene().getWindow();
         stage.close();
-        _execList.clear();
+        _execMap.clear();
     }
 }

@@ -17,4 +17,6 @@ public interface UserService {
     boolean removeById(long id);
 
     boolean update(long id, UserDTO userDTO);
+
+    boolean create(UserDTO userDTO);
 }

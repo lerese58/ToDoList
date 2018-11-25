@@ -11,7 +11,7 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
-public class NewUserDialogController {
+public class NewUserController {
 
     private final UserService _userService;
 
@@ -26,7 +26,7 @@ public class NewUserDialogController {
     @FXML
     private CheckBox checkBoxIsOpen;
 
-    public NewUserDialogController() {
+    public NewUserController() {
         _userService = new UserServiceImpl();
     }
 

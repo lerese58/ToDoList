@@ -5,7 +5,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 
-public class NotifyDialogControllerType2 {
+public class NotifyControllerYesNo {
+
+    private UITask _uiTask;
 
     @FXML
     private Button btnYes,
@@ -17,6 +19,10 @@ public class NotifyDialogControllerType2 {
     @FXML
     private void initialize() {
 
+    }
+
+    public void setUiTask(UITask uiTask) {
+        _uiTask = uiTask;
     }
 
     @FXML

@@ -6,6 +6,8 @@ import App.bll.UserService;
 import App.bll.UserServiceImpl;
 import App.model.TaskCalendar;
 import App.model.TaskDTO;
+import App.model.UserDTO;
+import App.utils.NotifyStatus;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -29,9 +31,9 @@ import java.util.Comparator;
  * TODO: add notifyStatus to App
  * TODO: choose task/user politics(remove owner from executors, remove yourself from executors, edit other user's task, ...)
  * */
-public class MainDialogController {
+public class MainController {
 
-    static long _currentUserID;
+    static UIUser _currentUser;
     private final TaskService _taskService;
     private final UserService _userService;
     private ObservableList<UITask> _data;
@@ -39,15 +41,22 @@ public class MainDialogController {
     private Stage _editStage;
     private Stage _loginStage;
     private Stage _infoStage;
+    private Stage _notifyStage;
     private Parent _editParent;
     private Parent _loginParent;
     private Parent _infoParent;
+    private Parent _notifyOkParent;
+    private Parent _notifyYesNoParent;
     private FXMLLoader _editLoader;
     private FXMLLoader _loginLoader;
     private FXMLLoader _infoLoader;
-    private EditDialogController _editDialogController;
-    private LoginDialogController _loginDialogController;
-    private TaskInfoDialogController _taskInfoController;
+    private FXMLLoader _notifyOkLoader;
+    private FXMLLoader _notifyYesNoLoader;
+    private EditController _editController;
+    private LoginController _loginController;
+    private TaskInfoController _taskInfoController;
+    private NotifyControllerOK _notifyControllerOK;
+    private NotifyControllerYesNo _notifyControllerYesNo;
 
     @FXML
     private Button btnAdd,
@@ -70,7 +79,7 @@ public class MainDialogController {
     @FXML
     private Label labelCount;
 
-    public MainDialogController() {
+    public MainController() {
         _taskService = new TaskServiceImpl();
         _userService = new UserServiceImpl();
         _data = FXCollections.observableArrayList();
@@ -80,21 +89,29 @@ public class MainDialogController {
         _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
         _infoLoader = new FXMLLoader();
         _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
+        _notifyOkLoader = new FXMLLoader();
+        _notifyOkLoader.setLocation(getClass().getResource("fxml/NotifyDialogOK.fxml"));
+        _notifyYesNoLoader = new FXMLLoader();
+        _notifyYesNoLoader.setLocation(getClass().getResource("fxml/NotifyDialogYesNo.fxml"));
         try {
-            _editParent = _editLoader.load();  //EditDialogController()
-            _loginParent = _loginLoader.load();//LoginDialogController()
-            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
+            _editParent = _editLoader.load();              //EditController()
+            _loginParent = _loginLoader.load();            //LoginController()
+            _infoParent = _infoLoader.load();              //TaskInfoController()
+            _notifyOkParent = _notifyOkLoader.load();      //NotifyControllerOK()
+            _notifyYesNoParent = _notifyYesNoLoader.load();//NotifyControllerYesNo()
         } catch (IOException e) {
             e.printStackTrace();
         }
-        _editDialogController = _editLoader.getController();
-        _loginDialogController = _loginLoader.getController();
+        _editController = _editLoader.getController();
+        _loginController = _loginLoader.getController();
         _taskInfoController = _infoLoader.getController();
+        _notifyControllerOK = _notifyOkLoader.getController();
+        _notifyControllerYesNo = _notifyYesNoLoader.getController();
     }
 
-    public MainDialogController(TaskService taskService) {
+    public MainController(TaskService taskService, UserService userService) {
         _taskService = taskService;
-        _userService = new UserServiceImpl();
+        _userService = userService;
         _data = FXCollections.observableArrayList();
         _editLoader = new FXMLLoader();
         _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
@@ -102,16 +119,24 @@ public class MainDialogController {
         _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
         _infoLoader = new FXMLLoader();
         _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
+        _notifyOkLoader = new FXMLLoader();
+        _notifyOkLoader.setLocation(getClass().getResource("App/ui/fxml/NotifyDialogYesNo.fxml"));
+        _notifyYesNoLoader = new FXMLLoader();
+        _notifyYesNoLoader.setLocation(getClass().getResource("App/ui/fxml/NotifyDialogYesNo.fxml"));
         try {
-            _editParent = _editLoader.load();  //EditDialogController()
-            _loginParent = _loginLoader.load();//LoginDialogController()
-            _infoParent = _infoLoader.load();  //TaskInfoDialogController()
+            _editParent = _editLoader.load();              //EditController()
+            _loginParent = _loginLoader.load();            //LoginController()
+            _infoParent = _infoLoader.load();              //TaskInfoController()
+            _notifyOkParent = _notifyOkLoader.load();      //NotifyControllerOK()
+            _notifyYesNoParent = _notifyYesNoLoader.load();//NotifyControllerYesNo()
         } catch (IOException e) {
             e.printStackTrace();
         }
-        _editDialogController = _editLoader.getController();
-        _loginDialogController = _loginLoader.getController();
+        _editController = _editLoader.getController();
+        _loginController = _loginLoader.getController();
         _taskInfoController = _infoLoader.getController();
+        _notifyControllerOK = _notifyOkLoader.getController();
+        _notifyControllerYesNo = _notifyYesNoLoader.getController();
     }
 
     public void setMainStage(Stage mainStage) {
@@ -121,9 +146,16 @@ public class MainDialogController {
     @FXML
     private void initialize() {
         showLoginDialog();
-        if (_loginDialogController.getUiUser() == null)
+        if (_loginController.getUiUser() == null)
             System.exit(0);
-        _currentUserID = getUser().getId();
+        _currentUser = getUser();
+        _taskService.getNotificationForUser(_currentUser.getId()).forEach(task -> {
+            if (getUser().isReadyToOrder())
+                _notifyControllerOK.setUiTask(new UITask(task));
+            else
+                _notifyControllerYesNo.setUiTask(new UITask(task));
+            showNotifyDialog(getUser().isReadyToOrder());
+        });
         fillTable();
         _data.addListener((ListChangeListener<UITask>) c -> updateCount());
         updateList();
@@ -136,7 +168,7 @@ public class MainDialogController {
                 showInfoDialog();
             }
         });
-        _editDialogController.setUiTask(null);
+        _editController.setUiTask(null);
     }
 
     @FXML
@@ -158,7 +190,7 @@ public class MainDialogController {
                 onEditAction(selectedTask);
                 break;
         }
-        _editDialogController.setUiTask(null);
+        _editController.setUiTask(null);
         updateList();
     }
 
@@ -187,7 +219,7 @@ public class MainDialogController {
     }
 
     private UIUser getUser() {
-        return _loginDialogController.getUiUser();
+        return _loginController.getUiUser();
     }
 
     private void fillTable() {
@@ -198,17 +230,20 @@ public class MainDialogController {
         columnPersonal.setCellValueFactory(cellData -> cellData.getValue().isPersonalProperty());
         columnStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
         columnPriority.setCellValueFactory(cellData -> cellData.getValue().prioProperty());
-        for (TaskDTO taskDTO : _taskService.getListForThisUser(_currentUserID)) {
-            _data.add(new UITask(taskDTO));
-        }
+        UserDTO userDTO = new UserDTO(_currentUser);
+        _taskService.getListForThisUser(_currentUser.getId()).forEach(taskDTO -> {
+            if (taskDTO.getUserList().get(userDTO.getId()).equals(NotifyStatus.CONFIRMED))
+                _data.add(new UITask(taskDTO));
+        });
+        tableView.setItems(_data);
     }
 
     private void onAddAction() {
-        _editDialogController.setUiTask(null);
+        _editController.setUiTask(null);
         showEditDialog();
-        if (_editDialogController.getUiTask() == null)
+        if (_editController.getUiTask() == null)
             return;
-        _taskService.update(_editDialogController.getUiTask().getId(), new TaskDTO(_editDialogController.getUiTask()));
+        _taskService.create(new TaskDTO(_editController.getUiTask()));
     }
 
     private void onDeleteAction(UITask selected) {
@@ -216,11 +251,11 @@ public class MainDialogController {
     }
 
     private void onEditAction(UITask selectedTask) {
-        _editDialogController.setUiTask(selectedTask);
+        _editController.setUiTask(selectedTask);
         showEditDialog();
-        if (_editDialogController.getUiTask() == null)
+        if (_editController.getUiTask() == null)
             return;
-        _taskService.update(selectedTask.getId(), new TaskDTO(_editDialogController.getUiTask()));
+        _taskService.update(selectedTask.getId(), new TaskDTO(_editController.getUiTask()));
     }
 
     private void showEditDialog() {
@@ -234,7 +269,7 @@ public class MainDialogController {
             _editStage.initOwner(_mainStage);
             _editStage.setOnHiding(event -> updateList());
         }
-        _editStage.showAndWait(); //_editDialogController.initialize();
+        _editStage.showAndWait(); //_editController.initialize();
     }
 
     private void showLoginDialog() {
@@ -247,7 +282,7 @@ public class MainDialogController {
             _loginStage.initOwner(_mainStage);
             _loginStage.setOnHiding(event -> getUser());
         }
-        _loginStage.showAndWait(); //_loginDialogController.initialize()
+        _loginStage.showAndWait(); //_loginController.initialize()
     }
 
     private void showInfoDialog() {
@@ -260,6 +295,24 @@ public class MainDialogController {
             _infoStage.setOnHiding(event -> updateList());
         }
         _infoStage.showAndWait();//_infoDialogController.initialize();
+    }
+
+    private void showNotifyDialog(boolean isReadyToOrder) {
+        if (_notifyStage == null) {
+            _notifyStage = new Stage();
+            _notifyStage.setMinWidth(240);
+            _notifyStage.setMinHeight(360);
+            _notifyStage.setResizable(false);
+            if (isReadyToOrder) {
+                _notifyStage.setScene(new Scene(_notifyOkParent));
+                _notifyStage.setOnShowing(event -> _notifyControllerOK.setFields());
+            } else {
+                _notifyStage.setScene(new Scene(_notifyYesNoParent));
+            }
+            _notifyStage.initOwner(_mainStage);
+            _notifyStage.setOnHiding(event -> updateList());
+        }
+        _notifyStage.showAndWait();
     }
 
     private void updateCount() {

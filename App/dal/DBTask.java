@@ -10,7 +10,7 @@ import java.util.List;
 public class DBTask {
     private final long _id;
     private long _ownerID;
-    private List<Long> _userList;
+    // private List<Long> _userList;
     private String _title;
     private TaskCalendar _deadline;
     private boolean _isPersonal;
@@ -20,7 +20,7 @@ public class DBTask {
     public DBTask(long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _id = Math.abs(((Long) ownerID).hashCode() + title.hashCode() + deadline.toString().hashCode() + ((Boolean) isPersonal).hashCode() + status.toString().hashCode() + prio.toString().hashCode());
         _ownerID = ownerID;
-        _userList = users;
+        //_userList = users;
         _title = title;
         _deadline = deadline;
         _isPersonal = isPersonal;
@@ -31,7 +31,7 @@ public class DBTask {
     public DBTask(long id, long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _id = id;
         _ownerID = ownerID;
-        _userList = users;
+        //_userList = users;
         _title = title;
         _deadline = deadline;
         _isPersonal = isPersonal;
@@ -42,7 +42,7 @@ public class DBTask {
     public DBTask(BLTask blTask) {
         _id = blTask.getId();
         _ownerID = blTask.getOwnerID();
-        _userList = blTask.getUserList();
+        //_userList = blTask.getUserList();
         _deadline = blTask.getDeadline();
         _isPersonal = blTask.isPersonal();
         _status = blTask.getStatus();
@@ -58,9 +58,9 @@ public class DBTask {
         return _ownerID;
     }
 
-    public List<Long> getUserList() {
-        return _userList;
-    }
+    //public List<Long> getUserList() {
+    //    return _userList;
+    //}
 
     public String getTitle() {
         return _title;
@@ -94,7 +94,7 @@ public class DBTask {
     public String toString() {
         String sb = String.valueOf(getId()) +
                 "/" + getOwnerID() +
-                "/" + getUserList() +
+                //            "/" + getUserList() +
                 "/" + getTitle() +
                 "/" + getDeadline().toString() +
                 "/" + isPersonal() +

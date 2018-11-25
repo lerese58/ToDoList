@@ -1,25 +1,24 @@
 package App.model;
 
 import App.ui.UITask;
+import App.utils.NotifyStatus;
 import App.utils.Priority;
 import App.utils.Status;
-import javafx.beans.property.SimpleLongProperty;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TaskDTO extends EntityDTO {
 
     private long _ownerID;
-    private List<Long> _userList;
+    private Map<Long, NotifyStatus> _userList;
     private String _title;
     private TaskCalendar _deadline;
     private boolean _isPersonal;
     private Status _status;
     private Priority _prio;
 
-    public TaskDTO(long ownerID, List<Long> userList, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
+    public TaskDTO(long ownerID, Map<Long, NotifyStatus> userList, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _ownerID = ownerID;
         _userList = userList;
         _title = title;
@@ -27,10 +26,9 @@ public class TaskDTO extends EntityDTO {
         _isPersonal = isPersonal;
         _status = status;
         _prio = prio;
-        __modified = LocalDateTime.now();
     }
 
-    public TaskDTO(long id, long ownerID, List<Long> userList, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
+    public TaskDTO(long id, long ownerID, Map<Long, NotifyStatus> userList, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         __id = id;
         _ownerID = ownerID;
         _userList = userList;
@@ -39,20 +37,18 @@ public class TaskDTO extends EntityDTO {
         _isPersonal = isPersonal;
         _status = status;
         _prio = prio;
-        __modified = LocalDateTime.now();
     }
 
     public TaskDTO(UITask uiTask) {
         __id = uiTask.getId();
         _ownerID = uiTask.getOwner();
-        _userList = new ArrayList<>();
+        _userList = new HashMap<>();
+        uiTask.getUserList().forEach((userID, notifyStatus) -> _userList.put(userID, notifyStatus));
         _title = uiTask.getTitle();
-        for (SimpleLongProperty userID : uiTask.getUserList()) _userList.add(userID.get());
         _deadline = new TaskCalendar(uiTask.getDeadline());
         _isPersonal = uiTask.isPersonal();
         _status = Status.valueOf(uiTask.getStatus());
         _prio = Priority.valueOf(uiTask.getPrio());
-        __modified = uiTask.getModified();
     }
 
     public long getId() {
@@ -63,7 +59,7 @@ public class TaskDTO extends EntityDTO {
         return _ownerID;
     }
 
-    public List<Long> getUserList() {
+    public Map<Long, NotifyStatus> getUserList() {
         return _userList;
     }
 
@@ -92,7 +88,6 @@ public class TaskDTO extends EntityDTO {
         final StringBuilder sb = new StringBuilder("");
         sb.append(__id);
         sb.append("/").append(_ownerID);
-        sb.append("/").append(_userList);
         sb.append("/").append(_title);
         sb.append("/").append(_deadline);
         sb.append("/").append(_isPersonal);

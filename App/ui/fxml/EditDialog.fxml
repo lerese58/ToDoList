@@ -7,7 +7,7 @@
 <?import javafx.scene.text.*?>
 <?import tornadofx.control.DateTimePicker?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="265.0" prefWidth="482.0"
-            xmlns="http://javafx.com/javafx/8.0.121" fx:controller="App.ui.EditDialogController">
+            xmlns="http://javafx.com/javafx/8.0.121" fx:controller="App.ui.EditController">
     <center>
         <GridPane>
             <columnConstraints>

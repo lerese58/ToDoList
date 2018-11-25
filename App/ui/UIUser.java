@@ -5,7 +5,10 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleStringProperty;
 
+import java.util.Objects;
+
 public class UIUser {
+
     private SimpleLongProperty _id;
     private SimpleStringProperty _name;
     private SimpleStringProperty _login;
@@ -94,6 +97,19 @@ public class UIUser {
 
     public void setReadyToOrder(Boolean readyToOrder) {
         _isReadyToOrder.set(readyToOrder);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UIUser uiUser = (UIUser) o;
+        return this.getId().equals(uiUser.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_name, _login, _password, _isReadyToOrder);
     }
 
     @Override

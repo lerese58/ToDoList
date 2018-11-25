@@ -15,7 +15,7 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 
-public class LoginDialogController {
+public class LoginController {
 
     private final UserService _userService;
     private UIUser _uiUser;
@@ -31,7 +31,7 @@ public class LoginDialogController {
     @FXML
     private PasswordField txtPassword;
 
-    public LoginDialogController() {
+    public LoginController() {
         _userService = new UserServiceImpl();
         FXMLLoader _newUserLoader = new FXMLLoader();
         _newUserLoader.setLocation(getClass().getResource("fxml/NewUserDialog.fxml"));

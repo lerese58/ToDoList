@@ -3,17 +3,17 @@ package App.bll;
 import App.model.TaskCalendar;
 import App.model.TaskDTO;
 import App.ui.UITask;
+import App.utils.NotifyStatus;
 import App.utils.Priority;
 import App.utils.Status;
-import javafx.beans.property.SimpleLongProperty;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class BLTask {
     private final long _id;
     private long _ownerID;
-    private List<Long> _userList;
+    private Map<Long, NotifyStatus> _userList;
     private String _title;
     private TaskCalendar _deadline;
     private boolean _isPersonal;
@@ -22,7 +22,7 @@ public class BLTask {
 
     private UserService _userService = new UserServiceImpl();
 
-    public BLTask(long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
+    public BLTask(long ownerID, Map<Long, NotifyStatus> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _id = Math.abs(title.hashCode() + deadline.toString().hashCode() + ((Boolean) isPersonal).hashCode() + status.toString().hashCode() + prio.toString().hashCode());
         _ownerID = ownerID;
         _userList = users;
@@ -33,7 +33,7 @@ public class BLTask {
         _prio = prio;
     }
 
-    public BLTask(long id, long ownerID, List<Long> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
+    public BLTask(long id, long ownerID, Map<Long, NotifyStatus> users, String title, TaskCalendar deadline, boolean isPersonal, Status status, Priority prio) {
         _id = id;
         _ownerID = ownerID;
         _userList = users;
@@ -47,8 +47,8 @@ public class BLTask {
     public BLTask(UITask uiTask) {
         _id = uiTask.getId();
         _ownerID = uiTask.getOwner();
-        _userList = new ArrayList<>();
-        for (SimpleLongProperty userID : uiTask.getUserList()) _userList.add(userID.getValue());
+        _userList = new HashMap<>();
+
         _title = uiTask.getTitle();
         _deadline = new TaskCalendar(uiTask.getDeadline());
         _isPersonal = uiTask.isPersonal();
@@ -75,7 +75,7 @@ public class BLTask {
         return _ownerID;
     }
 
-    public List<Long> getUserList() {
+    public Map<Long, NotifyStatus> getUserList() {
         return _userList;
     }
 

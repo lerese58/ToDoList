@@ -3,6 +3,7 @@ package App.model;
 import App.ui.UIUser;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 public class UserDTO extends EntityDTO {
 
@@ -56,6 +57,23 @@ public class UserDTO extends EntityDTO {
 
     public boolean isReadyToOrder() {
         return _isReadyToOrder;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        UserDTO userDTO = (UserDTO) o;
+        return _isReadyToOrder == userDTO._isReadyToOrder &&
+                Objects.equals(_name, userDTO._name) &&
+                Objects.equals(_login, userDTO._login) &&
+                Objects.equals(_password, userDTO._password) &&
+                __id == userDTO.__id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(_name, _login, _password, _isReadyToOrder);
     }
 
     @Override

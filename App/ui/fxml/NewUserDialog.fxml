@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <AnchorPane xmlns:fx="http://javafx.com/fxml/1" prefHeight="353.0" prefWidth="368.0"
-            xmlns="http://javafx.com/javafx/8.0.121" fx:controller="App.ui.NewUserDialogController">
+            xmlns="http://javafx.com/javafx/8.0.121" fx:controller="App.ui.NewUserController">
     <children>
         <Label alignment="TOP_CENTER" layoutX="287.0" layoutY="19.0" text="New user" AnchorPane.leftAnchor="150.0"
                AnchorPane.rightAnchor="150.0" AnchorPane.topAnchor="20.0">

@@ -9,30 +9,29 @@ import java.util.List;
 
 public class UserServiceImpl implements UserService {
 
-    private final Repository<UserDTO> _repository;
+    private final Repository<UserDTO> _userRepo;
 
     public UserServiceImpl() {
-        _repository = new UserRepoDB();
+        _userRepo = new UserRepoDB();
     }
 
     public UserServiceImpl(Repository<UserDTO> userRepository) {
-        _repository = userRepository;
+        _userRepo = userRepository;
     }
 
     @Override
     public List<UserDTO> getAllUsers() {
-        List<UserDTO> allUsers = new ArrayList<>(_repository.getAll());
-        return allUsers;
+        return new ArrayList<>(_userRepo.getAll());
     }
 
     @Override
     public UserDTO getById(long id) {
-        return _repository.getById(id);
+        return _userRepo.getById(id);
     }
 
     @Override
     public UserDTO getByLoginPassword(String login, String password) {
-        for (UserDTO userDTO : _repository.getAll()) {
+        for (UserDTO userDTO : _userRepo.getAll()) {
             if (login.equals(userDTO.getLogin()) && password.equals(userDTO.getPassword()))
                 return userDTO;
         }
@@ -41,7 +40,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO getByLogin(String login) {
-        for (UserDTO userDTO : _repository.getAll()) {
+        for (UserDTO userDTO : _userRepo.getAll()) {
             if (login.equals(userDTO.getLogin()))
                 return userDTO;
         }
@@ -50,11 +49,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean removeById(long id) {
-        return _repository.removeById(id);
+        return _userRepo.removeById(id);
     }
 
     @Override
     public boolean update(long id, UserDTO userDTO) {
-        return _repository.update(id, userDTO);
+        return _userRepo.update(id, userDTO);
+    }
+
+    @Override
+    public boolean create(UserDTO userDTO) {
+        return _userRepo.create(userDTO);
     }
 }

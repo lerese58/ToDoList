@@ -49,7 +49,7 @@ public class UserRepoDB implements Repository<UserDTO> {
     public UserDTO getById(long id) {
         try {
             Statement getByIdStatement = _conn.createStatement();
-            ResultSet userById = getByIdStatement.executeQuery("SELECT * FROM Users WHERE Users.ID = " + id);
+            ResultSet userById = getByIdStatement.executeQuery("SELECT * FROM Users WHERE ID = " + id);
             if (!userById.next())
                 return null;
             return parseResultSet(userById);
@@ -62,8 +62,7 @@ public class UserRepoDB implements Repository<UserDTO> {
     @Override
     public boolean update(long ID, UserDTO userDTO) {
         try {
-            PreparedStatement statement = _conn.prepareStatement(
-                    "UPDATE Users SET userName=?,login=?,password=?,isReadyToOrder=? WHERE Users.ID=?");
+            PreparedStatement statement = _conn.prepareStatement("UPDATE Users SET userName=?,login=?,password=?,isReadyToOrder=? WHERE Users.ID=?");
             statement.setString(1, userDTO.getName());
             statement.setString(2, userDTO.getLogin());
             statement.setString(3, userDTO.getPassword());
@@ -83,7 +82,7 @@ public class UserRepoDB implements Repository<UserDTO> {
             _conn.setAutoCommit(false);
             Statement removeUser = _conn.createStatement();
             Statement removeExecutor = _conn.createStatement();
-            removeUser.executeUpdate("DELETE * FROM Users WHERE Users.ID = " + id);
+            removeUser.executeUpdate("DELETE * FROM Users WHERE ID = " + id);
             removeExecutor.executeUpdate("delete * from task_userlist where UserID = " + id);
             _conn.commit();
             return true;

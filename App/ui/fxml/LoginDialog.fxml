@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
             minWidth="-Infinity" prefHeight="180.0" prefWidth="480.0" xmlns="http://javafx.com/javafx/8.0.121"
-            fx:controller="App.ui.LoginDialogController">
+            fx:controller="App.ui.LoginController">
     <top>
         <Label text="Login" BorderPane.alignment="BOTTOM_CENTER">
             <font>
