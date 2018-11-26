@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class NotifyControllerOK {
 
-    private final TaskService _taskService = new TaskServiceImpl();
+    private final TaskService _taskService = new TaskServiceImpl(MainController._currentUserID);
     private UITask _uiTask;
 
     @FXML
@@ -40,10 +40,13 @@ public class NotifyControllerOK {
     @FXML
     public void onButtonClicked(ActionEvent actionEvent) {
         Map<Long, NotifyStatus> tmp = new HashMap<>(_uiTask.getUserList());
-        tmp.put(MainController._currentUser.getId(), NotifyStatus.CONFIRMED);
+        tmp.replace(MainController._currentUserID, NotifyStatus.CONFIRMED);
         _uiTask.setUserList(tmp);
-        //_uiTask.getUserList().replace(MainController._currentUser, NotifyStatus.CONFIRMED);
         _taskService.update(_uiTask.getId(), new TaskDTO(_uiTask));
+        closeDialog();
+    }
+
+    private void closeDialog() {
         setUiTask(null);
         ((Stage) btnOK.getScene().getWindow()).close();
     }

@@ -38,6 +38,27 @@ public class TaskRepoDB implements Repository<TaskDTO> {
     }
 
     @Override
+    public List<TaskDTO> getList(long userID) {
+        List<Long> listOfTaskID = new ArrayList<>();
+        try {
+            Statement getList = _conn.createStatement();
+            ResultSet setOfTaskID = getList.executeQuery("select TaskID from task_userlist where UserID = " + userID);
+            if (setOfTaskID.next()) {
+                do {
+                    listOfTaskID.add(setOfTaskID.getLong("TaskID"));
+                }
+                while (setOfTaskID.next());
+            }
+            List<TaskDTO> taskList = new ArrayList<>();
+            listOfTaskID.forEach((taskID) -> taskList.add(getById(taskID)));
+            return taskList;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
     public boolean create(TaskDTO taskDTO) {
         try {
             _conn.setAutoCommit(false);

@@ -30,6 +30,25 @@ public class UserRepoDB implements Repository<UserDTO> {
     }
 
     @Override
+    public List<UserDTO> getList(long id) {
+        try {
+            Statement statement = _conn.createStatement();
+            ResultSet setOfUsers = statement.executeQuery("select UserID from task_userlist where TaskID = " + id);
+            List<UserDTO> allUsers = new ArrayList<>();
+            if (setOfUsers.next()) {
+                do {
+                    allUsers.add(getById(setOfUsers.getLong("UserID")));
+                }
+                while (setOfUsers.next());
+            }
+            return allUsers;
+        } catch (SQLException | NullPointerException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    @Override
     public boolean create(UserDTO userDTO) {
         try {
             PreparedStatement statement = _conn.prepareStatement("INSERT into Users VALUES (?,?,?,?,?)");

@@ -59,7 +59,7 @@ public class NewUserController {
         } else if (source.getId().equals("btnOK")) {
             if (isDataCorrect() == 0) {
                 UIUser uiUser = new UIUser(txtName.getText(), txtLogin.getText(), txtPassword.getText(), checkBoxIsOpen.isSelected());
-                _userService.update(uiUser.getId(), new UserDTO(uiUser));
+                _userService.create(new UserDTO(uiUser));
                 closeDialog();
             } else if (isDataCorrect() == 1) {
                 txtLogin.setText("");

@@ -6,8 +6,6 @@ import App.bll.UserService;
 import App.bll.UserServiceImpl;
 import App.model.TaskCalendar;
 import App.model.TaskDTO;
-import App.model.UserDTO;
-import App.utils.NotifyStatus;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -25,15 +23,16 @@ import java.util.Comparator;
 
 /*
  * TODO: set a date picker + time
+ * TODO: now in executorList not visible users who not answered to notificaton(as planned),
+ * but on repeat editing this task, this users would be removed from executorList,
+ * i think i should add notifyStatus in vision of this users, and delete from list only if notifyStatus is 'CANCELLED'
  * TODO: add ability to edit task status or not delete from db, just mark as 'DELETED'
- * TODO: automapper
- * TODO: add notifications;
  * TODO: add notifyStatus to App
  * TODO: choose task/user politics(remove owner from executors, remove yourself from executors, edit other user's task, ...)
  * */
 public class MainController {
 
-    static UIUser _currentUser;
+    static Long _currentUserID;
     private final TaskService _taskService;
     private final UserService _userService;
     private ObservableList<UITask> _data;
@@ -47,11 +46,6 @@ public class MainController {
     private Parent _infoParent;
     private Parent _notifyOkParent;
     private Parent _notifyYesNoParent;
-    private FXMLLoader _editLoader;
-    private FXMLLoader _loginLoader;
-    private FXMLLoader _infoLoader;
-    private FXMLLoader _notifyOkLoader;
-    private FXMLLoader _notifyYesNoLoader;
     private EditController _editController;
     private LoginController _loginController;
     private TaskInfoController _taskInfoController;
@@ -80,18 +74,30 @@ public class MainController {
     private Label labelCount;
 
     public MainController() {
-        _taskService = new TaskServiceImpl();
+        loadResources();
+        showLoginDialog();
+        if (_loginController.getUiUser() == null)
+            System.exit(0);
+        _currentUserID = _loginController.getUiUser().getId();
+        _taskService = new TaskServiceImpl(_currentUserID);
         _userService = new UserServiceImpl();
         _data = FXCollections.observableArrayList();
-        _editLoader = new FXMLLoader();
+    }
+
+    public void setMainStage(Stage mainStage) {
+        _mainStage = mainStage;
+    }
+
+    private void loadResources() {
+        FXMLLoader _editLoader = new FXMLLoader();
         _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
-        _loginLoader = new FXMLLoader();
+        FXMLLoader _loginLoader = new FXMLLoader();
         _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
-        _infoLoader = new FXMLLoader();
+        FXMLLoader _infoLoader = new FXMLLoader();
         _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
-        _notifyOkLoader = new FXMLLoader();
+        FXMLLoader _notifyOkLoader = new FXMLLoader();
         _notifyOkLoader.setLocation(getClass().getResource("fxml/NotifyDialogOK.fxml"));
-        _notifyYesNoLoader = new FXMLLoader();
+        FXMLLoader _notifyYesNoLoader = new FXMLLoader();
         _notifyYesNoLoader.setLocation(getClass().getResource("fxml/NotifyDialogYesNo.fxml"));
         try {
             _editParent = _editLoader.load();              //EditController()
@@ -109,66 +115,25 @@ public class MainController {
         _notifyControllerYesNo = _notifyYesNoLoader.getController();
     }
 
-    public MainController(TaskService taskService, UserService userService) {
-        _taskService = taskService;
-        _userService = userService;
-        _data = FXCollections.observableArrayList();
-        _editLoader = new FXMLLoader();
-        _editLoader.setLocation(getClass().getResource("fxml/EditDialog.fxml"));
-        _loginLoader = new FXMLLoader();
-        _loginLoader.setLocation(getClass().getResource("fxml/LoginDialog.fxml"));
-        _infoLoader = new FXMLLoader();
-        _infoLoader.setLocation(getClass().getResource("fxml/InfoDialog.fxml"));
-        _notifyOkLoader = new FXMLLoader();
-        _notifyOkLoader.setLocation(getClass().getResource("App/ui/fxml/NotifyDialogYesNo.fxml"));
-        _notifyYesNoLoader = new FXMLLoader();
-        _notifyYesNoLoader.setLocation(getClass().getResource("App/ui/fxml/NotifyDialogYesNo.fxml"));
-        try {
-            _editParent = _editLoader.load();              //EditController()
-            _loginParent = _loginLoader.load();            //LoginController()
-            _infoParent = _infoLoader.load();              //TaskInfoController()
-            _notifyOkParent = _notifyOkLoader.load();      //NotifyControllerOK()
-            _notifyYesNoParent = _notifyYesNoLoader.load();//NotifyControllerYesNo()
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        _editController = _editLoader.getController();
-        _loginController = _loginLoader.getController();
-        _taskInfoController = _infoLoader.getController();
-        _notifyControllerOK = _notifyOkLoader.getController();
-        _notifyControllerYesNo = _notifyYesNoLoader.getController();
-    }
-
-    public void setMainStage(Stage mainStage) {
-        _mainStage = mainStage;
-    }
-
     @FXML
     private void initialize() {
-        showLoginDialog();
-        if (_loginController.getUiUser() == null)
-            System.exit(0);
-        _currentUser = getUser();
-        _taskService.getNotificationForUser(_currentUser.getId()).forEach(task -> {
-            if (getUser().isReadyToOrder())
+        _taskService.getNotificationForUser(_currentUserID).forEach(task -> {
+            if (getCurrentUser().isReadyToOrder())
                 _notifyControllerOK.setUiTask(new UITask(task));
             else
                 _notifyControllerYesNo.setUiTask(new UITask(task));
-            showNotifyDialog(getUser().isReadyToOrder());
-        });
-        fillTable();
-        _data.addListener((ListChangeListener<UITask>) c -> updateCount());
+            showNotifyDialog(getCurrentUser().isReadyToOrder());
+        }); //show notifications
         updateList();
         columnID.setVisible(false);
         columnDeadline.setComparator(Comparator.comparing(TaskCalendar::new));
-        labelCount.setText("Count of ToDo: " + _data.size());
         tableView.setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
                 _taskInfoController.setUiTask(tableView.getSelectionModel().getSelectedItem());
                 showInfoDialog();
             }
-        });
-        _editController.setUiTask(null);
+        }); //show infoDialog on double-click
+        //_editController.setUiTask(null);
     }
 
     @FXML
@@ -218,7 +183,7 @@ public class MainController {
         updateList();
     }
 
-    private UIUser getUser() {
+    private UIUser getCurrentUser() {
         return _loginController.getUiUser();
     }
 
@@ -230,11 +195,7 @@ public class MainController {
         columnPersonal.setCellValueFactory(cellData -> cellData.getValue().isPersonalProperty());
         columnStatus.setCellValueFactory(cellData -> cellData.getValue().statusProperty());
         columnPriority.setCellValueFactory(cellData -> cellData.getValue().prioProperty());
-        UserDTO userDTO = new UserDTO(_currentUser);
-        _taskService.getListForThisUser(_currentUser.getId()).forEach(taskDTO -> {
-            if (taskDTO.getUserList().get(userDTO.getId()).equals(NotifyStatus.CONFIRMED))
-                _data.add(new UITask(taskDTO));
-        });
+        _taskService.getListForUser(_currentUserID).forEach(taskDTO -> _data.add(new UITask(taskDTO)));
         tableView.setItems(_data);
     }
 
@@ -280,7 +241,7 @@ public class MainController {
             _loginStage.setResizable(false);
             _loginStage.setScene(new Scene(_loginParent));
             _loginStage.initOwner(_mainStage);
-            _loginStage.setOnHiding(event -> getUser());
+            //_loginStage.setOnHiding(event -> getCurrentUser());
         }
         _loginStage.showAndWait(); //_loginController.initialize()
     }
@@ -308,6 +269,7 @@ public class MainController {
                 _notifyStage.setOnShowing(event -> _notifyControllerOK.setFields());
             } else {
                 _notifyStage.setScene(new Scene(_notifyYesNoParent));
+                _notifyStage.setOnShowing(event -> _notifyControllerYesNo.setFields());
             }
             _notifyStage.initOwner(_mainStage);
             _notifyStage.setOnHiding(event -> updateList());
@@ -323,7 +285,6 @@ public class MainController {
         _data.clear();
         fillTable();
         _data.addListener((ListChangeListener<UITask>) c -> updateCount());
-        tableView.setItems(_data);
         updateCount();
     }
 }

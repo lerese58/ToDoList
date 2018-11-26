@@ -8,6 +8,8 @@ public interface Repository<T extends EntityDTO> {
 
     List<T> getAll();
 
+    List<T> getList(long id);
+
     T getById(long id);
 
     boolean removeById(long id);

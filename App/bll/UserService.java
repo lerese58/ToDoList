@@ -6,7 +6,7 @@ import java.util.List;
 
 public interface UserService {
 
-    List<UserDTO> getAllUsers();
+    List<UserDTO> getByTaskID(long taskID);
 
     UserDTO getById(long id);
 

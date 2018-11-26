@@ -13,42 +13,40 @@ import java.util.List;
 
 public class TaskServiceImpl implements TaskService {
 
-    private final Repository<TaskDTO> _taskRepo;
-    private final Repository<UserDTO> _userRepo;
+    private final Repository<TaskDTO> _taskRepo = new TaskRepoDB();
+    private final Repository<UserDTO> _userRepo = new UserRepoDB();
+    private Long _currentUserID;
 
-    public TaskServiceImpl() {
-        _taskRepo = new TaskRepoDB();
-        _userRepo = new UserRepoDB();
+    public TaskServiceImpl(Long userID) {
+        _currentUserID = userID;
     }
 
-    public TaskServiceImpl(Repository<TaskDTO> taskRepo, Repository<UserDTO> userRepo) {
-        _taskRepo = taskRepo;
-        _userRepo = userRepo;
+    public Long getCurrentUserID() {
+        return _currentUserID;
+    }
+
+    public void setCurrentUserID(Long userID) {
+        _currentUserID = userID;
     }
 
     @Override
-    public List<TaskDTO> getTasks() {
-        return new ArrayList<>(_taskRepo.getAll());
-    }
-
-    @Override
-    public List<TaskDTO> getListForThisUser(long userID) {
+    public List<TaskDTO> getListForUser(long userID) {
         List<TaskDTO> tasks = new ArrayList<>();
-        _taskRepo.getAll().forEach(task -> {
-            if (task.getUserList().containsKey(userID))
-                tasks.add(task);
+        _taskRepo.getList(userID).forEach(taskDTO -> {
+            if (taskDTO.getUserList().get(userID).equals(NotifyStatus.CONFIRMED))
+                tasks.add(taskDTO);
         });
         return tasks;
     }
 
     @Override
     public List<TaskDTO> getNotificationForUser(long userID) {
-        List<TaskDTO> tasks = new ArrayList<>();
-        getListForThisUser(userID).forEach(task -> {
-            if (task.getUserList().containsValue(NotifyStatus.NON_SEEN))
-                tasks.add(task);
+        List<TaskDTO> newTasks = new ArrayList<>();
+        _taskRepo.getList(userID).forEach(taskDTO -> {
+            if (taskDTO.getUserList().get(userID).equals(NotifyStatus.NON_SEEN))
+                newTasks.add(taskDTO);
         });
-        return tasks;
+        return newTasks;
     }
 
     public TaskDTO getByID(long id) {
@@ -58,7 +56,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskDTO> getListBefore(LocalDateTime time) {
         List<TaskDTO> deadlineTasks = new ArrayList<>();
-        _taskRepo.getAll().forEach(task -> {
+        _taskRepo.getList(_currentUserID).forEach(task -> {
             if (task.getDeadline().getDateTime().isBefore(time))
                 deadlineTasks.add(task);
         });
@@ -68,7 +66,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public List<TaskDTO> getListAfter(LocalDateTime time) {
         List<TaskDTO> tasks = new ArrayList<>();
-        _taskRepo.getAll().forEach(task -> {
+        _taskRepo.getList(_currentUserID).forEach(task -> {
             if (task.getDeadline().getDateTime().isAfter(time))
                 tasks.add(task);
         });
@@ -82,7 +80,7 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     public boolean removeBefore(LocalDateTime time) {
-        _taskRepo.getAll().forEach(task -> {
+        _taskRepo.getList(_currentUserID).forEach(task -> {
             if (task.getDeadline().getDateTime().isBefore(time))
                 _taskRepo.removeById(task.getId());
         });

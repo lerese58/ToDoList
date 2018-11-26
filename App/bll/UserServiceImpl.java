@@ -4,7 +4,6 @@ import App.dal.Repository;
 import App.dal.UserRepoDB;
 import App.model.UserDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class UserServiceImpl implements UserService {
@@ -20,8 +19,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDTO> getAllUsers() {
-        return new ArrayList<>(_userRepo.getAll());
+    public List<UserDTO> getByTaskID(long taskID) {
+        return _userRepo.getList(taskID);
     }
 
     @Override

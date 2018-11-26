@@ -7,9 +7,7 @@ import java.util.List;
 
 public interface TaskService {
 
-    List<TaskDTO> getTasks();
-
-    List<TaskDTO> getListForThisUser(long userID);
+    List<TaskDTO> getListForUser(long userID);
 
     List<TaskDTO> getNotificationForUser(long userID);
 

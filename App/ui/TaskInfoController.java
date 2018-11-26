@@ -72,7 +72,7 @@ public class TaskInfoController {
                 closeDialog();
                 break;
             case "btnEdit":
-                closeDialog();
+                closeDialog();//TODO
                 break;
             case "btnCancel":
                 closeDialog();
@@ -91,7 +91,10 @@ public class TaskInfoController {
             prioLabel.setText(_uiTask.getPrio());
             tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
             _execMap.clear();
-            _execMap.putAll(_uiTask.getUserList());
+            _uiTask.getUserList().forEach((userID, notifyStatus) -> {
+                if (notifyStatus.equals(NotifyStatus.CONFIRMED))
+                    _execMap.put(userID, notifyStatus);
+            });
             ObservableList<UIUser> observableList = FXCollections.observableArrayList();
             _execMap.forEach((userID, notifyStatus) -> observableList.add(new UIUser(_userService.getById(userID))));
             tableExecutors.setItems(observableList);
