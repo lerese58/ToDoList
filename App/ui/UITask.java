@@ -1,7 +1,5 @@
 package App.ui;
 
-import App.bll.UserService;
-import App.bll.UserServiceImpl;
 import App.model.TaskCalendar;
 import App.model.TaskDTO;
 import App.utils.NotifyStatus;
@@ -15,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class UITask {
-    UserService _userService = new UserServiceImpl();
     private SimpleLongProperty _id;
     private SimpleLongProperty _ownerID;
     private SimpleStringProperty _title;

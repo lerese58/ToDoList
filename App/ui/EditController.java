@@ -19,15 +19,22 @@ import java.util.regex.Pattern;
 
 public class EditController {
 
+    ObservableList<UIUser> readyUsers = FXCollections.observableArrayList(),
+            notReadyUsers = FXCollections.observableArrayList();
+    @FXML
+    TableView<UIUser> tableExecutors,
+            tableNotReadyExecutors;
+    @FXML
+    TableColumn<UIUser, String> tableColumnExecutors,
+            tableColumnNotReady;
+    private UserService _userService;
+
     @FXML
     CheckBox personalCheck;
-    @FXML
-    ListView<UIUser> listViewUsers;
-    @FXML
-    ChoiceBox<Priority> menuPriority;
-    private UserService _userService;
     private ObservableMap<Long, NotifyStatus> _executorsMap;
     private UITask _uiTask;
+    @FXML
+    ChoiceBox<Priority> menuPriority;
     @FXML
     private Button
             btnOK,
@@ -43,6 +50,8 @@ public class EditController {
     public EditController() {
         _userService = new UserServiceImpl();
         _executorsMap = FXCollections.observableHashMap();
+        readyUsers.clear();
+        notReadyUsers.clear();
         Pattern _correctTime = Pattern.compile("^\\d{2}:\\d{2} \\d{2}.\\d{2}.\\d{4}$");
     }
 
@@ -50,6 +59,8 @@ public class EditController {
     private void initialize() {
         menuPriority.setItems(FXCollections.observableArrayList(Priority.values()));
         menuPriority.setOnInputMethodTextChanged(event -> menuPriority.setValue(menuPriority.getSelectionModel().getSelectedItem()));
+        tableNotReadyExecutors.setItems(notReadyUsers);
+        tableExecutors.setItems(readyUsers);
     }
 
     public UITask getUiTask() {
@@ -58,6 +69,8 @@ public class EditController {
 
     public void setUiTask(UITask uiTask) {
         _uiTask = uiTask;
+        tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
+        tableColumnNotReady.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
         setFields();//initialize???
     }
 
@@ -69,13 +82,21 @@ public class EditController {
             personalCheck.setSelected(_uiTask.isPersonal());
             _executorsMap.clear();
             _uiTask.getUserList().forEach((userID, notifyStatus) -> {
-                if (notifyStatus.equals(NotifyStatus.CONFIRMED))
+                if (notifyStatus.equals(NotifyStatus.CONFIRMED) || notifyStatus.equals(NotifyStatus.NON_SEEN))
                     _executorsMap.put(userID, notifyStatus);
             });
-            listViewUsers.setVisible(true);
-            ObservableList<UIUser> observableList = FXCollections.observableArrayList();
-            _executorsMap.forEach((userID, notifyStatus) -> observableList.add(new UIUser(_userService.getById(userID))));
-            listViewUsers.setItems(observableList);
+            tableExecutors.setVisible(true);
+            tableNotReadyExecutors.setVisible(true);
+            readyUsers.clear();
+            notReadyUsers.clear();
+            _executorsMap.forEach((userID, notifyStatus) -> {
+                if (notifyStatus.equals(NotifyStatus.NON_SEEN))
+                    notReadyUsers.add(new UIUser(_userService.getById(userID)));
+                if (notifyStatus.equals(NotifyStatus.CONFIRMED))
+                    readyUsers.add(new UIUser(_userService.getById(userID)));
+            });
+            tableExecutors.setItems(readyUsers);
+            tableNotReadyExecutors.setItems(notReadyUsers);
             return;
         }
         txtTitle.setText("");
@@ -85,7 +106,8 @@ public class EditController {
         menuPriority.setValue(null);
         personalCheck.setSelected(false);
         _executorsMap.clear();
-        listViewUsers.setVisible(false);
+        tableNotReadyExecutors.setVisible(false);
+        tableExecutors.setVisible(false);
     }
 
     @FXML
@@ -102,16 +124,16 @@ public class EditController {
             }
             _executorsMap.put(newExecutor.getId(), NotifyStatus.NON_SEEN);
             txtUserAdd.setText("");
-            listViewUsers.setVisible(true);
+            tableExecutors.setVisible(true);
             ObservableList<UIUser> observableList = FXCollections.observableArrayList();
             _executorsMap.forEach((userID, notifyStatus) -> observableList.add(new UIUser(_userService.getById(userID))));
-            listViewUsers.setItems(observableList);
+            tableExecutors.setItems(observableList);
         }
     }
 
     @FXML
     private void removeExecutor() {
-        UIUser selected = listViewUsers.getSelectionModel().getSelectedItem();
+        UIUser selected = tableExecutors.getSelectionModel().getSelectedItem();
         if (selected.getId().equals(MainController._currentUserID)) {
             txtUserAdd.setText("");
             txtUserAdd.setPromptText("You can't remove yourself");
@@ -121,7 +143,7 @@ public class EditController {
         ObservableList<UIUser> observableList = FXCollections.observableArrayList();
         observableList.clear();
         _executorsMap.forEach((userID, notifyStatus) -> observableList.add(new UIUser(_userService.getById(userID))));
-        listViewUsers.setItems(observableList);
+        tableExecutors.setItems(observableList);
     }
 
     @FXML

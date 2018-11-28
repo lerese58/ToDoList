@@ -23,9 +23,7 @@ import java.util.Comparator;
 
 /*
  * TODO: set a date picker + time
- * TODO: now in executorList not visible users who not answered to notificaton(as planned),
- * but on repeat editing this task, this users would be removed from executorList,
- * i think i should add notifyStatus in vision of this users, and delete from list only if notifyStatus is 'CANCELLED'
+ * TODO: set tables executors/notReady
  * TODO: add ability to edit task status or not delete from db, just mark as 'DELETED'
  * TODO: add notifyStatus to App
  * TODO: choose task/user politics(remove owner from executors, remove yourself from executors, edit other user's task, ...)
@@ -82,6 +80,7 @@ public class MainController {
         _taskService = new TaskServiceImpl(_currentUserID);
         _userService = new UserServiceImpl();
         _data = FXCollections.observableArrayList();
+        _data.addListener((ListChangeListener<UITask>) c -> updateCount());
     }
 
     public void setMainStage(Stage mainStage) {
@@ -128,10 +127,7 @@ public class MainController {
         columnID.setVisible(false);
         columnDeadline.setComparator(Comparator.comparing(TaskCalendar::new));
         tableView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                _taskInfoController.setUiTask(tableView.getSelectionModel().getSelectedItem());
-                showInfoDialog();
-            }
+            if (event.getClickCount() == 2) onInfoAction(tableView.getSelectionModel().getSelectedItem());
         }); //show infoDialog on double-click
         //_editController.setUiTask(null);
     }
@@ -175,8 +171,7 @@ public class MainController {
                 onEditAction(selectedTask);
                 break;
             case "menuItemProperties":
-                _taskInfoController.setUiTask(selectedTask);
-                showInfoDialog();
+                onInfoAction(selectedTask);
                 break;
         }
         _taskInfoController.setUiTask(null);
@@ -219,6 +214,11 @@ public class MainController {
         _taskService.update(selectedTask.getId(), new TaskDTO(_editController.getUiTask()));
     }
 
+    private void onInfoAction(UITask uiTask) {
+        _taskInfoController.setUiTask(uiTask);
+        showInfoDialog();
+    }
+
     private void showEditDialog() {
         if (_editStage == null) { //lazy initialization
             _editStage = new Stage();
@@ -249,8 +249,8 @@ public class MainController {
     private void showInfoDialog() {
         if (_infoStage == null) {
             _infoStage = new Stage();
-            _infoStage.setMinWidth(240);
-            _infoStage.setMinHeight(360);
+            _infoStage.setMinWidth(400);
+            _infoStage.setMinHeight(400);
             _infoStage.setScene(new Scene(_infoParent));
             _infoStage.initOwner(_mainStage);
             _infoStage.setOnHiding(event -> updateList());
@@ -264,13 +264,8 @@ public class MainController {
             _notifyStage.setMinWidth(240);
             _notifyStage.setMinHeight(360);
             _notifyStage.setResizable(false);
-            if (isReadyToOrder) {
-                _notifyStage.setScene(new Scene(_notifyOkParent));
-                _notifyStage.setOnShowing(event -> _notifyControllerOK.setFields());
-            } else {
-                _notifyStage.setScene(new Scene(_notifyYesNoParent));
-                _notifyStage.setOnShowing(event -> _notifyControllerYesNo.setFields());
-            }
+            if (isReadyToOrder) _notifyStage.setScene(new Scene(_notifyOkParent));
+            else _notifyStage.setScene(new Scene(_notifyYesNoParent));
             _notifyStage.initOwner(_mainStage);
             _notifyStage.setOnHiding(event -> updateList());
         }
@@ -284,7 +279,6 @@ public class MainController {
     private void updateList() {
         _data.clear();
         fillTable();
-        _data.addListener((ListChangeListener<UITask>) c -> updateCount());
         updateCount();
     }
 }

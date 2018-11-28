@@ -37,9 +37,11 @@ public class TaskInfoController {
             btnEdit,
             btnCancel;
     @FXML
-    private TableView<UIUser> tableExecutors;
+    private TableView<UIUser> tableExecutors,
+            notReadyExecutors;
     @FXML
-    private TableColumn<UIUser, String> tableColumnExecutors;
+    private TableColumn<UIUser, String> tableColumnExecutors,
+            tableColumnNotReadyExecutors;
 
     public TaskInfoController() {
         _userService = new UserServiceImpl();
@@ -90,14 +92,23 @@ public class TaskInfoController {
             statusLabel.setText(_uiTask.getStatus());
             prioLabel.setText(_uiTask.getPrio());
             tableColumnExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
+            tableColumnNotReadyExecutors.setCellValueFactory(cellData -> cellData.getValue().loginProperty());
             _execMap.clear();
             _uiTask.getUserList().forEach((userID, notifyStatus) -> {
-                if (notifyStatus.equals(NotifyStatus.CONFIRMED))
+                if (notifyStatus.equals(NotifyStatus.CONFIRMED) || notifyStatus.equals(NotifyStatus.NON_SEEN))
                     _execMap.put(userID, notifyStatus);
             });
-            ObservableList<UIUser> observableList = FXCollections.observableArrayList();
-            _execMap.forEach((userID, notifyStatus) -> observableList.add(new UIUser(_userService.getById(userID))));
-            tableExecutors.setItems(observableList);
+            ObservableList<UIUser> readyUsers = FXCollections.observableArrayList(),
+                    notReadyUsers = FXCollections.observableArrayList();
+            _execMap.forEach((userID, notifyStatus) -> {
+                UIUser uiUser = new UIUser(_userService.getById(userID));
+                if (notifyStatus.equals(NotifyStatus.CONFIRMED))
+                    readyUsers.add(uiUser);
+                if (notifyStatus.equals(NotifyStatus.NON_SEEN))
+                    notReadyUsers.add(uiUser);
+            });
+            tableExecutors.setItems(readyUsers);
+            notReadyExecutors.setItems(notReadyUsers);
         }
     }
 
