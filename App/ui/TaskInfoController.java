@@ -86,7 +86,7 @@ public class TaskInfoController {
     private void setFields() {
         if (_uiTask != null) {
             titleLabel.setText(_uiTask.getTitle());
-            ownerLabel.setText(String.valueOf(_uiTask.getOwner()));
+            ownerLabel.setText(_userService.getById(_uiTask.getOwner()).getLogin());
             deadlineLabel.setText(_uiTask.getDeadline());
             personalLabel.setText(_uiTask.isPersonal() ? "Yes" : "No");
             statusLabel.setText(_uiTask.getStatus());

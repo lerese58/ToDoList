@@ -2,7 +2,7 @@ package App.dal;
 
 import App.model.TaskCalendar;
 import App.model.TaskDTO;
-import App.model.UserDTO;
+import App.ui.MainController;
 import App.utils.NotifyStatus;
 import App.utils.Priority;
 import App.utils.Status;
@@ -16,7 +16,7 @@ import java.util.Map;
 public class TaskRepoDB implements Repository<TaskDTO> {
 
     private Connection _conn = DBConnection.getInstance().getConnection();
-    private final Repository<UserDTO> _userRepoDB = new UserRepoDB();
+    //private final Repository<UserDTO> _userRepoDB = new UserRepoDB();
 
     @Override
     public List<TaskDTO> getAll() { //TODO: get ALL tasks, mb i need to get only for this user
@@ -130,10 +130,10 @@ public class TaskRepoDB implements Repository<TaskDTO> {
     public boolean removeById(long id) {
         try {
             _conn.setAutoCommit(false);
-            Statement removeTask = _conn.createStatement();
+            //Statement removeTask = _conn.createStatement();
             Statement removeExecutors = _conn.createStatement();
-            removeTask.executeUpdate("delete from task where ID = " + id);
-            removeExecutors.executeUpdate("delete from task_userlist where TaskID = " + id);
+            //removeTask.executeUpdate("delete from task where ID = " + id);
+            removeExecutors.executeUpdate("delete from task_userlist where TaskID = " + id + " and UserID = " + MainController.getCurrentUserID());
             _conn.commit();
             return true;
         } catch (SQLException e) {

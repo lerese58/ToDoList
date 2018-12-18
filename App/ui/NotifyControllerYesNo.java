@@ -2,6 +2,8 @@ package App.ui;
 
 import App.bll.TaskService;
 import App.bll.TaskServiceImpl;
+import App.bll.UserService;
+import App.bll.UserServiceImpl;
 import App.model.TaskDTO;
 import App.utils.NotifyStatus;
 import javafx.event.ActionEvent;
@@ -15,9 +17,9 @@ import java.util.Map;
 
 public class NotifyControllerYesNo {
 
+    private final TaskService _taskService = new TaskServiceImpl(MainController._currentUserID);
+    private final UserService _userService = new UserServiceImpl();
     private UITask _uiTask;
-    private TaskService _taskService = new TaskServiceImpl(MainController._currentUserID);
-
     @FXML
     private Button btnYes,
             btnNo;
@@ -35,6 +37,7 @@ public class NotifyControllerYesNo {
     }
 
     public void setFields() {
+        labelTitle.setText("\"" + _userService.getById(_uiTask.getOwner()).getLogin() + "\" has added you to executors for task: ");
         labelTask.setText(_uiTask.toString());
     }
 

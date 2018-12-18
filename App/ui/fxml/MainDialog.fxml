@@ -5,7 +5,8 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
 <VBox xmlns:fx="http://javafx.com/fxml/1" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
-      minWidth="-Infinity" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.121"
+      minWidth="-Infinity"
+      prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/8.0.121"
       fx:controller="App.ui.MainController">
     <children>
         <BorderPane>
@@ -20,6 +21,14 @@
                     </font>
                 </Label>
             </center>
+            <right>
+                <Hyperlink fx:id="settingsLink" alignment="TOP_LEFT" onAction="#showSettingDialog" text="Settings..."
+                           BorderPane.alignment="CENTER">
+                    <BorderPane.margin>
+                        <Insets/>
+                    </BorderPane.margin>
+                </Hyperlink>
+            </right>
         </BorderPane>
         <AnchorPane fx:id="anchorPane" VBox.vgrow="ALWAYS">
             <children>
@@ -70,6 +79,12 @@
                 <HBox alignment="TOP_RIGHT" fillHeight="false" maxHeight="-Infinity" maxWidth="-Infinity"
                       prefWidth="640.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                     <children>
+                        <Button fx:id="btnBackground" mnemonicParsing="false" onAction="#buttonClicked"
+                                text="BackGround Operation">
+                            <HBox.margin>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                            </HBox.margin>
+                        </Button>
                         <Button fx:id="btnAdd" mnemonicParsing="false" onAction="#buttonClicked" text="Add new...">
                             <HBox.margin>
                                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>

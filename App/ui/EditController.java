@@ -27,14 +27,13 @@ public class EditController {
     @FXML
     TableColumn<UIUser, String> tableColumnExecutors,
             tableColumnNotReady;
-    private UserService _userService;
-
     @FXML
     CheckBox personalCheck;
-    private ObservableMap<Long, NotifyStatus> _executorsMap;
-    private UITask _uiTask;
     @FXML
     ChoiceBox<Priority> menuPriority;
+    private UserService _userService;
+    private ObservableMap<Long, NotifyStatus> _executorsMap;
+    private UITask _uiTask;
     @FXML
     private Button
             btnOK,

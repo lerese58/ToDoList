@@ -1,6 +1,5 @@
 package App.ui;
 
-
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,6 +23,6 @@ public class Main extends Application {
         primaryStage.setTitle("ToDoList");
         primaryStage.setMinWidth(480);
         primaryStage.setMinHeight(300);
-        primaryStage.show();//mainController.initialize()
+        primaryStage.show();
     }
 }

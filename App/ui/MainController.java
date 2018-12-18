@@ -1,11 +1,11 @@
 package App.ui;
 
-import App.bll.TaskService;
-import App.bll.TaskServiceImpl;
-import App.bll.UserService;
-import App.bll.UserServiceImpl;
+import App.bll.*;
 import App.model.TaskCalendar;
 import App.model.TaskDTO;
+import App.utils.Priority;
+import App.utils.Status;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
@@ -28,9 +28,10 @@ import java.util.Comparator;
  * TODO: add notifyStatus to App
  * TODO: choose task/user politics(remove owner from executors, remove yourself from executors, edit other user's task, ...)
  * */
-public class MainController {
+public class MainController implements Observer {
 
     static Long _currentUserID;
+
     private final TaskService _taskService;
     private final UserService _userService;
     private ObservableList<UITask> _data;
@@ -39,11 +40,13 @@ public class MainController {
     private Stage _loginStage;
     private Stage _infoStage;
     private Stage _notifyStage;
+    private Stage _spinnerStage;
     private Parent _editParent;
     private Parent _loginParent;
     private Parent _infoParent;
     private Parent _notifyOkParent;
     private Parent _notifyYesNoParent;
+    private Parent _spinnerParent;
     private EditController _editController;
     private LoginController _loginController;
     private TaskInfoController _taskInfoController;
@@ -70,6 +73,8 @@ public class MainController {
             columnPersonal;
     @FXML
     private Label labelCount;
+    @FXML
+    private Hyperlink settingsLink;
 
     public MainController() {
         loadResources();
@@ -81,6 +86,10 @@ public class MainController {
         _userService = new UserServiceImpl();
         _data = FXCollections.observableArrayList();
         _data.addListener((ListChangeListener<UITask>) c -> updateCount());
+    }
+
+    public static Long getCurrentUserID() {
+        return _currentUserID;
     }
 
     public void setMainStage(Stage mainStage) {
@@ -98,12 +107,15 @@ public class MainController {
         _notifyOkLoader.setLocation(getClass().getResource("fxml/NotifyDialogOK.fxml"));
         FXMLLoader _notifyYesNoLoader = new FXMLLoader();
         _notifyYesNoLoader.setLocation(getClass().getResource("fxml/NotifyDialogYesNo.fxml"));
+        FXMLLoader _spinnerLoader = new FXMLLoader();
+        _spinnerLoader.setLocation(getClass().getResource("fxml/ProgressDialog.fxml"));
         try {
             _editParent = _editLoader.load();              //EditController()
             _loginParent = _loginLoader.load();            //LoginController()
             _infoParent = _infoLoader.load();              //TaskInfoController()
             _notifyOkParent = _notifyOkLoader.load();      //NotifyControllerOK()
             _notifyYesNoParent = _notifyYesNoLoader.load();//NotifyControllerYesNo()
+            _spinnerParent = _spinnerLoader.load();        //SpinnerController()
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -112,6 +124,7 @@ public class MainController {
         _taskInfoController = _infoLoader.getController();
         _notifyControllerOK = _notifyOkLoader.getController();
         _notifyControllerYesNo = _notifyYesNoLoader.getController();
+        //ProgressController _spinnerController = _spinnerLoader.getController();
     }
 
     @FXML
@@ -126,10 +139,14 @@ public class MainController {
         updateList();
         columnID.setVisible(false);
         columnDeadline.setComparator(Comparator.comparing(TaskCalendar::new));
+        columnStatus.setComparator(Comparator.comparing(Status::valueOf));
+        columnPriority.setComparator(Comparator.comparing(Priority::valueOf));
         tableView.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) onInfoAction(tableView.getSelectionModel().getSelectedItem());
-        }); //show infoDialog on double-click
-        //_editController.setUiTask(null);
+            if (event.getClickCount() == 2)
+                if (tableView.getSelectionModel().getSelectedItem() != null) {
+                    onInfoAction(tableView.getSelectionModel().getSelectedItem());
+                }
+        });                               //show infoDialog on double-click
     }
 
     @FXML
@@ -150,9 +167,40 @@ public class MainController {
             case "btnEdit":
                 onEditAction(selectedTask);
                 break;
+            case "btnBackground":
+                showProgressDialog();
+                onBackground();
+                break;
         }
         _editController.setUiTask(null);
         updateList();
+    }
+
+    private void onBackground() {
+        /*BackgroundOperation wait = new BackgroundOperation(() -> {
+            System.out.println("start");
+            try {
+                Thread.sleep(1000);
+                System.out.println("running");
+                Thread.sleep(1000);
+                System.out.println("running");
+                Thread.sleep(1000);
+                System.out.println("running");
+                Thread.sleep(1000);
+                System.out.println("finished");
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+        wait.addObserver(this);
+        wait.run();*/
+        BackgroundOperation backgroundOperation = new BackgroundOperation(() -> {
+            for (int i = 0; i < 100; i++) {
+                _taskService.getListForUser(_currentUserID);
+            }
+        });
+        backgroundOperation.addObserver(this);
+        backgroundOperation.run();
     }
 
     @FXML
@@ -219,6 +267,23 @@ public class MainController {
         showInfoDialog();
     }
 
+    @FXML
+    private void showSettingDialog() {
+
+    }
+
+    private void showProgressDialog() {
+        if (_spinnerStage == null) {
+            _spinnerStage = new Stage();
+            _spinnerStage.setResizable(false);
+            _spinnerStage.initOwner(_mainStage);
+            _spinnerStage.setScene(new Scene(_spinnerParent));
+            _spinnerStage.initModality(Modality.WINDOW_MODAL);
+        }
+        _spinnerStage.show();
+        //System.out.println("open");
+    }
+
     private void showEditDialog() {
         if (_editStage == null) { //lazy initialization
             _editStage = new Stage();
@@ -230,7 +295,7 @@ public class MainController {
             _editStage.initOwner(_mainStage);
             _editStage.setOnHiding(event -> updateList());
         }
-        _editStage.showAndWait(); //_editController.initialize();
+        _editStage.showAndWait();
     }
 
     private void showLoginDialog() {
@@ -241,9 +306,8 @@ public class MainController {
             _loginStage.setResizable(false);
             _loginStage.setScene(new Scene(_loginParent));
             _loginStage.initOwner(_mainStage);
-            //_loginStage.setOnHiding(event -> getCurrentUser());
         }
-        _loginStage.showAndWait(); //_loginController.initialize()
+        _loginStage.showAndWait();
     }
 
     private void showInfoDialog() {
@@ -255,7 +319,7 @@ public class MainController {
             _infoStage.initOwner(_mainStage);
             _infoStage.setOnHiding(event -> updateList());
         }
-        _infoStage.showAndWait();//_infoDialogController.initialize();
+        _infoStage.showAndWait();
     }
 
     private void showNotifyDialog(boolean isReadyToOrder) {
@@ -264,8 +328,14 @@ public class MainController {
             _notifyStage.setMinWidth(240);
             _notifyStage.setMinHeight(360);
             _notifyStage.setResizable(false);
-            if (isReadyToOrder) _notifyStage.setScene(new Scene(_notifyOkParent));
-            else _notifyStage.setScene(new Scene(_notifyYesNoParent));
+            if (isReadyToOrder) {
+                _notifyStage.setScene(new Scene(_notifyOkParent));
+                _notifyStage.setOnShowing(event -> _notifyControllerOK.setFields());
+
+            } else {
+                _notifyStage.setScene(new Scene(_notifyYesNoParent));
+                _notifyStage.setOnShowing(event -> _notifyControllerYesNo.setFields());
+            }
             _notifyStage.initOwner(_mainStage);
             _notifyStage.setOnHiding(event -> updateList());
         }
@@ -273,12 +343,18 @@ public class MainController {
     }
 
     private void updateCount() {
-        labelCount.setText("Count of ToDo: " + _data.size());
+        labelCount.setText("Count of ToDo: " + _data.size() + ", current user: " + _userService.getById(_currentUserID).getLogin());
     }
 
     private void updateList() {
         _data.clear();
         fillTable();
         updateCount();
+    }
+
+    @Override
+    public void handleEvent() {
+        System.out.println("handleEvent");
+        Platform.runLater(_spinnerStage::close);
     }
 }
