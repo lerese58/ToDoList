@@ -49,6 +49,18 @@ public class UserRepoDB implements Repository<UserDTO> {
     }
 
     @Override
+    public Long getCount() {
+        try {
+            Statement count = _conn.createStatement();
+            ResultSet getCount = count.executeQuery("select COUNT(ID) from users;");
+            return getCount.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+    @Override
     public boolean create(UserDTO userDTO) {
         try {
             PreparedStatement statement = _conn.prepareStatement("INSERT into Users VALUES (?,?,?,?,?)");

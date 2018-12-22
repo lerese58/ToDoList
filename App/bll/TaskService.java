@@ -11,6 +11,10 @@ public interface TaskService {
 
     List<TaskDTO> getNotificationForUser(long userID);
 
+    IBackgroundOperation<List<TaskDTO>> getAllBO();
+
+    Long getCount();
+
     TaskDTO getByID(long id);
 
     List<TaskDTO> getListBefore(LocalDateTime time);

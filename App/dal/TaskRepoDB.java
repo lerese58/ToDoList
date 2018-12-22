@@ -59,6 +59,18 @@ public class TaskRepoDB implements Repository<TaskDTO> {
     }
 
     @Override
+    public Long getCount() {
+        try {
+            Statement count = _conn.createStatement();
+            ResultSet getCount = count.executeQuery("select COUNT(ID) from task;");
+            return getCount.getLong(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+    @Override
     public boolean create(TaskDTO taskDTO) {
         try {
             _conn.setAutoCommit(false);

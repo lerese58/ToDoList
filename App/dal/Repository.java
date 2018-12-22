@@ -10,6 +10,8 @@ public interface Repository<T extends EntityDTO> {
 
     List<T> getList(long id);
 
+    Long getCount();
+
     T getById(long id);
 
     boolean removeById(long id);

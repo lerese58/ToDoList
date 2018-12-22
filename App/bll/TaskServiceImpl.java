@@ -49,6 +49,27 @@ public class TaskServiceImpl implements TaskService {
         return newTasks;
     }
 
+    @Override
+    public IBackgroundOperation<List<TaskDTO>> getAllBO() {
+        List<TaskDTO> list = new ArrayList<>();
+        //Long count = getCount();
+        IBackgroundOperation<List<TaskDTO>> backgroundOperation = new BackgroundOperation<>();
+        backgroundOperation.setCallable(() -> {
+            for (int i = 0; i < _taskRepo.getAll().size(); i++) {
+                list.add(_taskRepo.getAll().get(i));
+                backgroundOperation.notifyObserver((long) 100 * (i + 1) / _taskRepo.getAll().size());
+                Thread.sleep(500);
+            }
+            return list;
+        });
+        return backgroundOperation;
+    }
+
+    @Override
+    public Long getCount() {
+        return _taskRepo.getCount();
+    }
+
     public TaskDTO getByID(long id) {
         return _taskRepo.getById(id);
     }

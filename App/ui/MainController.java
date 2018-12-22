@@ -40,18 +40,19 @@ public class MainController implements Observer {
     private Stage _loginStage;
     private Stage _infoStage;
     private Stage _notifyStage;
-    private Stage _spinnerStage;
+    private Stage _progressStage;
     private Parent _editParent;
     private Parent _loginParent;
     private Parent _infoParent;
     private Parent _notifyOkParent;
     private Parent _notifyYesNoParent;
-    private Parent _spinnerParent;
+    private Parent _progressParent;
     private EditController _editController;
     private LoginController _loginController;
     private TaskInfoController _taskInfoController;
     private NotifyControllerOK _notifyControllerOK;
     private NotifyControllerYesNo _notifyControllerYesNo;
+    private ProgressController _progressController;
 
     @FXML
     private Button btnAdd,
@@ -115,7 +116,7 @@ public class MainController implements Observer {
             _infoParent = _infoLoader.load();              //TaskInfoController()
             _notifyOkParent = _notifyOkLoader.load();      //NotifyControllerOK()
             _notifyYesNoParent = _notifyYesNoLoader.load();//NotifyControllerYesNo()
-            _spinnerParent = _spinnerLoader.load();        //SpinnerController()
+            _progressParent = _spinnerLoader.load();        //SpinnerController()
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -124,7 +125,7 @@ public class MainController implements Observer {
         _taskInfoController = _infoLoader.getController();
         _notifyControllerOK = _notifyOkLoader.getController();
         _notifyControllerYesNo = _notifyYesNoLoader.getController();
-        //ProgressController _spinnerController = _spinnerLoader.getController();
+        _progressController = _spinnerLoader.getController();
     }
 
     @FXML
@@ -177,30 +178,10 @@ public class MainController implements Observer {
     }
 
     private void onBackground() {
-        /*BackgroundOperation wait = new BackgroundOperation(() -> {
-            System.out.println("start");
-            try {
-                Thread.sleep(1000);
-                System.out.println("running");
-                Thread.sleep(1000);
-                System.out.println("running");
-                Thread.sleep(1000);
-                System.out.println("running");
-                Thread.sleep(1000);
-                System.out.println("finished");
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        });
-        wait.addObserver(this);
-        wait.run();*/
-        BackgroundOperation backgroundOperation = new BackgroundOperation(() -> {
-            for (int i = 0; i < 100; i++) {
-                _taskService.getListForUser(_currentUserID);
-            }
-        });
+        IBackgroundOperation backgroundOperation = _taskService.getAllBO();
+        backgroundOperation.addObserver(_progressController);
         backgroundOperation.addObserver(this);
-        backgroundOperation.run();
+        backgroundOperation.start();
     }
 
     @FXML
@@ -229,6 +210,7 @@ public class MainController implements Observer {
     private UIUser getCurrentUser() {
         return _loginController.getUiUser();
     }
+
 
     private void fillTable() {
         columnID.setCellValueFactory(cellData -> cellData.getValue().idProperty().asObject());
@@ -273,14 +255,14 @@ public class MainController implements Observer {
     }
 
     private void showProgressDialog() {
-        if (_spinnerStage == null) {
-            _spinnerStage = new Stage();
-            _spinnerStage.setResizable(false);
-            _spinnerStage.initOwner(_mainStage);
-            _spinnerStage.setScene(new Scene(_spinnerParent));
-            _spinnerStage.initModality(Modality.WINDOW_MODAL);
+        if (_progressStage == null) {
+            _progressStage = new Stage();
+            _progressStage.setResizable(false);
+            _progressStage.initOwner(_mainStage);
+            _progressStage.setScene(new Scene(_progressParent));
+            _progressStage.initModality(Modality.WINDOW_MODAL);
         }
-        _spinnerStage.show();
+        _progressStage.show();
         //System.out.println("open");
     }
 
@@ -353,8 +335,15 @@ public class MainController implements Observer {
     }
 
     @Override
-    public void handleEvent() {
-        System.out.println("handleEvent");
-        Platform.runLater(_spinnerStage::close);
+    public void handleEvent(Long progress) {
+        System.out.println("handleEvent" + progress);
+        if (progress == 100) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Platform.runLater(_progressStage::close);
+        }
     }
 }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.layout.AnchorPane?>
@@ -13,6 +13,12 @@
                 <Label fx:id="labelWait" text="Wait, please ..." AnchorPane.leftAnchor="10.0"
                        AnchorPane.topAnchor="10.0"/>
                 <ProgressBar fx:id="progressBar" layoutX="75.0" layoutY="75.0" prefHeight="30.0" prefWidth="300.0"/>
+                <Label fx:id="progressLabel" layoutX="171.0" layoutY="105.0" text="progressLabel"
+                       textAlignment="CENTER">
+                    <padding>
+                        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0"/>
+                    </padding>
+                </Label>
             </children>
         </AnchorPane>
     </center>
